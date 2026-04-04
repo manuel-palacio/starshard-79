@@ -17,10 +17,11 @@ class World {
     val asteroids   = mutableListOf<Asteroid>()
     val bullets     = mutableListOf<Bullet>()
     val saucers     = mutableListOf<Saucer>()
-    var score       = 0
-    var lives       = 3
-    var wave        = 0
-    var gameOver    = false
+    var score            = 0
+    var lives            = 3
+    var wave             = 0
+    var gameOver         = false
+    var waveMaxAsteroids = 1   // peak alive count this wave; denominator for danger ratio
 
     val input            = GameInput()
     val bulletPool       = BulletPool()
@@ -49,6 +50,9 @@ class World {
         bullets.removeAll   { !it.alive }
         collisionSystem.update()
         waveSystem.update(delta)
+        // Track peak alive count so the heartbeat danger ratio stays valid across splits
+        val alive = asteroids.count { it.alive }
+        if (alive > waveMaxAsteroids) waveMaxAsteroids = alive
         if (lives <= 0 && !ship.alive) gameOver = true
     }
 

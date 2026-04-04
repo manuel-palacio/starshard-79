@@ -48,6 +48,7 @@ class WaveSystem(private val world: World) {
             val (x, y) = randomEdgePosition()
             world.asteroids.add(AsteroidFactory.createRandom(x, y, AsteroidSize.LARGE))
         }
+        world.waveMaxAsteroids = count.coerceAtLeast(1)
     }
 
     private fun randomEdgePosition(): Pair<Float, Float> = when (Random.nextInt(4)) {

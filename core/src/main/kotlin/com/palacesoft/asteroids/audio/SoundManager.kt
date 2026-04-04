@@ -28,15 +28,17 @@ class SoundManager {
     private var thrustPlaying = false
     private var saucerPlaying = false
 
-    private var beatTimer    = 0f
-    private var beatInterval = 1.0f
-    private var nextBeat     = 0
+    private var beatTimer       = 0f
+    private var beatInterval    = 1.0f
+    private var nextBeat        = 0
+    private var duckTimer       = 0f   // seconds remaining of beat ducking
 
     private var lastScore       = 0
     private val extraLifeEvery  = 10_000
 
     // ── synthesis helpers ────────────────────────────────────────────────────
 
+    private fun lerp(a: Float, b: Float, t: Float) = a + (b - a) * t.coerceIn(0f, 1f)
     private fun sawtooth(phase: Double) = 2.0 * (phase - floor(phase)) - 1.0
     private fun square(phase: Double)   = if (phase % 1.0 < 0.5) 1.0 else -1.0
 
@@ -199,7 +201,7 @@ class SoundManager {
 
     // ── public API ────────────────────────────────────────────────────────────
 
-    fun update(delta: Float, asteroidCount: Int, wave: Int, score: Int,
+    fun update(delta: Float, asteroidCount: Int, waveMaxAsteroids: Int, score: Int,
                thrusting: Boolean, hasSaucer: Boolean) {
         if (!Settings.sfxEnabled) return
 
@@ -209,18 +211,19 @@ class SoundManager {
         if (currThreshold > prevThreshold) extraLife.play(0.95f)
         lastScore = score
 
-        // Heartbeat: SLOW when many asteroids, FAST when hunting last few.
-        // Each wave raises the baseline speed slightly (later waves are already tenser).
-        val waveSpeedup  = (wave * 0.05f).coerceAtMost(0.45f)
-        val maxInterval  = (1.0f - waveSpeedup).coerceAtLeast(0.4f)   // e.g. wave 1 → 1.0s, wave 9 → 0.55s
-        val minInterval  = 0.18f                                        // fastest: hunting last asteroid
-        val astFraction  = asteroidCount.coerceAtMost(16).toFloat() / 16f
-        beatInterval     = minInterval + astFraction * (maxInterval - minInterval)
+        // Heartbeat: danger = 1 when wave is clear, 0 when full.
+        // Lerp interval 1.0s (calm) → 0.28s (hunting last rock).
+        val danger   = 1f - (asteroidCount.toFloat() / waveMaxAsteroids.toFloat()).coerceIn(0f, 1f)
+        beatInterval = lerp(1.0f, 0.28f, danger)
+
+        // Duck slightly during loud events (saucer / big explosion)
+        if (duckTimer > 0f) duckTimer -= delta
+        val beatVol = if (duckTimer > 0f) 0.45f else 0.72f   // background pulse, never dominant
 
         beatTimer += delta
         if (beatTimer >= beatInterval) {
-            beatTimer -= beatInterval
-            if (nextBeat == 0) beat1.play(1.0f) else beat2.play(1.0f)
+            beatTimer = 0f   // reset cleanly — no drift accumulation
+            if (nextBeat == 0) beat1.play(beatVol) else beat2.play(beatVol)
             nextBeat = 1 - nextBeat
         }
 
@@ -240,10 +243,10 @@ class SoundManager {
     }
 
     fun playFire()       { if (Settings.sfxEnabled) fire.play(0.6f) }
-    fun playBangLarge()  { if (Settings.sfxEnabled) bangLarge.play(0.85f) }
-    fun playBangMedium() { if (Settings.sfxEnabled) bangMedium.play(0.75f) }
+    fun playBangLarge()  { if (Settings.sfxEnabled) { bangLarge.play(0.85f);  duckTimer = 0.5f } }
+    fun playBangMedium() { if (Settings.sfxEnabled) { bangMedium.play(0.75f); duckTimer = 0.3f } }
     fun playBangSmall()  { if (Settings.sfxEnabled) bangSmall.play(0.65f) }
-    fun playShipBang()   { if (Settings.sfxEnabled) bangShip.play(0.92f) }
+    fun playShipBang()   { if (Settings.sfxEnabled) { bangShip.play(0.92f);   duckTimer = 0.8f } }
     fun playSaucerFire() { if (Settings.sfxEnabled) saucerFire.play(0.58f) }
 
     fun dispose() {

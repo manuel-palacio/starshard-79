@@ -14,6 +14,11 @@ dependencies {
 
 application {
     mainClass.set("com.palacesoft.asteroids.desktop.DesktopLauncher")
+    applicationDefaultJvmArgs = listOf("-XstartOnFirstThread")
+}
+
+tasks.named<JavaExec>("run") {
+    workingDir = rootProject.file("assets")
 }
 
 tasks.jar {
