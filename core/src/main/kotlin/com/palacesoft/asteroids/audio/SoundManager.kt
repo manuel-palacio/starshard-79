@@ -16,8 +16,8 @@ class SoundManager {
     val bangMedium = loadSound(genBang(0.3f,  110f, 0.75f))
     val bangSmall  = loadSound(genBang(0.18f, 180f, 0.6f))
     val bangShip   = loadSound(genShipDeath())
-    val beat1      = loadSound(genBeat(72.0,  0.09f))
-    val beat2      = loadSound(genBeat(84.0,  0.09f))
+    val beat1      = loadSound(genBeat(55.0,  0.22f))
+    val beat2      = loadSound(genBeat(68.0,  0.22f))
     val saucerFire = loadSound(genSaucerFire())
     val thrust     = loadSound(genThrust())
     val saucerWarp = loadSound(genSaucerWarble())
@@ -57,11 +57,13 @@ class SoundManager {
         val rng = java.util.Random(7L)
         val raw = DoubleArray(n) { i ->
             val t = i.toDouble() / SR
-            val env = exp(-t / (dur * 0.35))
-            sin(2.0 * PI * freq * t) * env * 0.85 +
-            rng.nextGaussian() * exp(-t / (dur * 0.15)) * 0.08
+            val env = exp(-t / (dur * 0.55))          // slow decay → sustained bass body
+            val fundamental = sin(2.0 * PI * freq * t) * env
+            val octave      = sin(2.0 * PI * freq * 2.0 * t) * env * 0.35  // punch without shrillness
+            val click       = rng.nextGaussian() * exp(-t / (dur * 0.04)) * 0.22  // transient attack click
+            fundamental + octave + click
         }
-        return toWav(normalize(raw, 0.82f))
+        return toWav(normalize(raw, 0.98f))
     }
 
     private fun genLaserFire(): ByteArray {
@@ -183,7 +185,7 @@ class SoundManager {
         beatTimer += delta
         if (beatTimer >= beatInterval) {
             beatTimer -= beatInterval
-            if (nextBeat == 0) beat1.play(0.8f) else beat2.play(0.8f)
+            if (nextBeat == 0) beat1.play(1.0f) else beat2.play(1.0f)
             nextBeat = 1 - nextBeat
         }
 
