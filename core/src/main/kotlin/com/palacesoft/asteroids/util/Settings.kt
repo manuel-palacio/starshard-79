@@ -3,6 +3,7 @@ package com.palacesoft.asteroids.util
 import com.palacesoft.asteroids.effects.EffectQuality
 import com.palacesoft.asteroids.effects.FxSettings
 import com.palacesoft.asteroids.effects.fxSettingsFor
+import com.palacesoft.asteroids.input.TouchScheme
 
 object Settings {
     const val WORLD_WIDTH  = 1600f
@@ -13,6 +14,9 @@ object Settings {
     val bloomEnabled get() = fxSettings.enableBloom
 
     var sfxEnabled         = true
+
+    /** Active touch control scheme. BUTTONS preserves the original feel; JOYSTICK suits players who prefer analogue-style input. */
+    var touchScheme: TouchScheme = TouchScheme.BUTTONS
 
     /**
      * False on first run — WaveSystem spawns the scripted tutorial wave and

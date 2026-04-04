@@ -1,6 +1,14 @@
 package com.palacesoft.asteroids.input
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.GlyphLayout
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.utils.Disposable
+import com.palacesoft.asteroids.util.Settings
 
 /**
  * Scheme A — dual-zone discrete button layout.
@@ -18,7 +26,7 @@ import com.badlogic.gdx.Gdx
  *
  * Button zone fractions are in normalised screen-width units (0..1).
  */
-class TouchControls {
+class TouchControls : Disposable {
 
     companion object {
         /** Bottom fraction of screen used as the control strip. */
@@ -37,6 +45,9 @@ class TouchControls {
     // Track which pointer indices are currently held in the hyperspace zone.
     // Hyperspace fires exactly once per new touch-down there.
     private val hyperspaceActive = BooleanArray(5)
+
+    // Button label font — owned here so disposal is co-located with usage
+    private val btnFont = BitmapFont().apply { data.setScale(1.4f) }
 
     fun poll(input: GameInput) {
         val sw = Gdx.graphics.width.toFloat()
@@ -86,4 +97,52 @@ class TouchControls {
             }
         }
     }
+
+    /**
+     * Draws button dividers and labels in HUD world coordinates.
+     * Uses [batch] for label text and [sr] for divider lines.
+     * Must be called while the HUD FitViewport camera is active.
+     * Does nothing on non-touch devices.
+     */
+    fun renderOverlay(sr: ShapeRenderer, batch: SpriteBatch) {
+        if (!Gdx.input.isPeripheralAvailable(Input.Peripheral.MultitouchScreen)) return
+
+        val W  = Settings.WORLD_WIDTH
+        val H  = Settings.WORLD_HEIGHT
+        val bH = H * STRIP_HEIGHT
+
+        val x0 = 0f
+        val x1 = W * COL_ROT_L_RIGHT
+        val x2 = W * COL_THRUST_RIGHT
+        val x3 = W * COL_LEFT_END
+        val x4 = W * COL_FIRE_RIGHT
+        val x5 = W
+
+        val strokeColor = Color(0.9f, 0.9f, 0.9f, 0.20f)
+        val labelColor  = Color(0.9f, 0.9f, 0.9f, 0.35f)
+
+        sr.begin(ShapeRenderer.ShapeType.Line)
+        sr.color = strokeColor
+        sr.line(x1, 0f, x1, bH)
+        sr.line(x2, 0f, x2, bH)
+        sr.line(x3, 0f, x3, bH)
+        sr.line(x4, 0f, x4, bH)
+        sr.line(x0, bH, x5, bH)
+        sr.end()
+
+        batch.begin()
+        fun drawLabel(text: String, cx: Float) {
+            val gl = GlyphLayout(btnFont, text)
+            btnFont.color = labelColor
+            btnFont.draw(batch, text, cx - gl.width / 2f, bH / 2f + gl.height / 2f)
+        }
+        drawLabel("◁",   (x0 + x1) / 2f)
+        drawLabel("▲",   (x1 + x2) / 2f)
+        drawLabel("▷",   (x2 + x3) / 2f)
+        drawLabel("FIRE", (x3 + x4) / 2f)
+        drawLabel("★",   (x4 + x5) / 2f)
+        batch.end()
+    }
+
+    override fun dispose() { btnFont.dispose() }
 }

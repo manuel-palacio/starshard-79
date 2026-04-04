@@ -21,9 +21,10 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     private val pipeline     = PostProcessingPipeline(game.batch)
 
     init {
-        renderer.hudRenderer = HudRenderer(game.batch, game.camera)
-        renderer.vfx = vfx
-        renderer.pipeline = pipeline
+        renderer.hudRenderer  = HudRenderer(game.batch, game.camera)
+        renderer.inputHandler = inputHandler
+        renderer.vfx          = vfx
+        renderer.pipeline     = pipeline
         world.vfx = vfx
         world.sounds = sounds
         vfx.subscribeToEvents()
@@ -55,6 +56,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     override fun resume() {}
     override fun dispose() {
         renderer.hudRenderer?.dispose()
+        inputHandler.dispose()
         vfx.dispose()
         pipeline.dispose()
         GameEventBus.clear()

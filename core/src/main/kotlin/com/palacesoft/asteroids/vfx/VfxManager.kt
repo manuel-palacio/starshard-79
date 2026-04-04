@@ -85,7 +85,8 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
 
     private fun onBulletFired(e: GameEvent.BulletFired) {
         flashes.acquire()?.spawn(e.x, e.y)
-        if (fx.enableParticles) {
+        // muzzle_glow is HIGH-only: requires bloom pipeline to look intentional
+        if (fx.enableBloom) {
             particles.spawnMuzzleGlow(e.x, e.y)
         }
     }
@@ -108,7 +109,11 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
         shake.trigger(baseIntensity * fx.shakeMultiplier)
 
         // MEDIUM+: additive particle glow overlay on top of procedural debris
-        if (fx.enableParticles) particles.spawnExplosionGlow(e.x, e.y)
+        if (fx.enableParticles) {
+            particles.spawnExplosionGlow(e.x, e.y)
+            // AsteroidHit is never emitted (every bullet hit destroys), so sparks fire here
+            particles.spawnImpactSparks(e.x, e.y)
+        }
     }
 
     private fun onPlayerHit(e: GameEvent.PlayerHit) {

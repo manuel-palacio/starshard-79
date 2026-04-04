@@ -2,16 +2,16 @@ explosion_glow
 - Delay -
 active: false
 - Duration -
-lowMin: 600.0
-lowMax: 600.0
+lowMin: 150.0
+lowMax: 150.0
 - Count -
 min: 0
-max: 30
+max: 18
 - Emission -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 30.0
-highMax: 30.0
+highMin: 110.0
+highMax: 110.0
 relative: false
 scalingCount: 1
 scaling0: 1.0
@@ -20,8 +20,8 @@ timeline0: 0.0
 - Life -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 400.0
-highMax: 700.0
+highMin: 300.0
+highMax: 500.0
 relative: false
 scalingCount: 1
 scaling0: 1.0
@@ -58,8 +58,8 @@ timeline0: 0.0
 - X Scale -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 24.0
-highMax: 40.0
+highMin: 8.0
+highMax: 16.0
 relative: false
 scalingCount: 2
 scaling0: 1.0
@@ -73,15 +73,15 @@ active: false
 active: true
 lowMin: 0.0
 lowMax: 0.0
-highMin: 60.0
-highMax: 180.0
+highMin: 80.0
+highMax: 220.0
 relative: false
 scalingCount: 2
 scaling0: 1.0
 scaling1: 0.0
 timelineCount: 2
 timeline0: 0.0
-timeline1: 0.8
+timeline1: 0.85
 - Angle -
 active: true
 lowMin: 0.0
@@ -102,14 +102,14 @@ active: false
 - Tint -
 colorsCount: 9
 colors0: 1.0
-colors1: 0.9
-colors2: 0.3
+colors1: 1.0
+colors2: 1.0
 colors3: 1.0
-colors4: 0.5
-colors5: 0.1
-colors6: 0.8
-colors7: 0.2
-colors8: 0.0
+colors4: 0.95
+colors5: 0.65
+colors6: 0.9
+colors7: 0.6
+colors8: 0.2
 timelineCount: 3
 timeline0: 0.0
 timeline1: 0.4
@@ -117,8 +117,8 @@ timeline2: 1.0
 - Transparency -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 0.8
-highMax: 0.8
+highMin: 0.85
+highMax: 0.85
 relative: false
 scalingCount: 3
 scaling0: 0.0
@@ -126,7 +126,7 @@ scaling1: 1.0
 scaling2: 0.0
 timelineCount: 3
 timeline0: 0.0
-timeline1: 0.15
+timeline1: 0.08
 timeline2: 1.0
 - Options -
 attached: false

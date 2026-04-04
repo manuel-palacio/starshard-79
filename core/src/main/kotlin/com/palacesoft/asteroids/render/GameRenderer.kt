@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.palacesoft.asteroids.game.World
+import com.palacesoft.asteroids.input.InputHandler
 import com.palacesoft.asteroids.util.Settings
 import com.palacesoft.asteroids.vfx.VfxManager
 
@@ -19,6 +20,7 @@ class GameRenderer(
     private val astRenderer  = AsteroidRenderer()
     private val saucerRend   = SaucerRenderer()
     var hudRenderer: HudRenderer? = null
+    var inputHandler: InputHandler? = null
     var vfx: VfxManager? = null
     var pipeline: PostProcessingPipeline? = null
 
@@ -69,12 +71,12 @@ class GameRenderer(
         batch.projectionMatrix = camera.combined
         vfx?.renderTextEffects()
 
-        // Pass 6: HUD and touch controls (shake-free camera)
+        // Pass 6: HUD and touch overlay (shake-free camera)
         camera.position.set(Settings.WORLD_WIDTH / 2f, Settings.WORLD_HEIGHT / 2f, 0f)
         camera.update()
         hudRenderer?.render(world)
         sr.projectionMatrix = camera.combined
-        hudRenderer?.renderTouchButtons(sr)
+        inputHandler?.renderTouchOverlay(sr, batch)
     }
 
     private fun drawEmissive(sr: ShapeRenderer, world: World) {

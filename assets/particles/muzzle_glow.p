@@ -2,16 +2,16 @@ muzzle_glow
 - Delay -
 active: false
 - Duration -
-lowMin: 60.0
-lowMax: 60.0
+lowMin: 80.0
+lowMax: 80.0
 - Count -
 min: 0
-max: 5
+max: 4
 - Emission -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 5.0
-highMax: 5.0
+highMin: 50.0
+highMax: 50.0
 relative: false
 scalingCount: 1
 scaling0: 1.0
@@ -20,8 +20,8 @@ timeline0: 0.0
 - Life -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 40.0
-highMax: 80.0
+highMin: 50.0
+highMax: 100.0
 relative: false
 scalingCount: 1
 scaling0: 1.0
@@ -58,8 +58,8 @@ timeline0: 0.0
 - X Scale -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 16.0
-highMax: 24.0
+highMin: 8.0
+highMax: 16.0
 relative: false
 scalingCount: 2
 scaling0: 1.0
@@ -73,13 +73,15 @@ active: false
 active: true
 lowMin: 0.0
 lowMax: 0.0
-highMin: 20.0
-highMax: 60.0
+highMin: 10.0
+highMax: 40.0
 relative: false
-scalingCount: 1
+scalingCount: 2
 scaling0: 1.0
-timelineCount: 1
+scaling1: 0.0
+timelineCount: 2
 timeline0: 0.0
+timeline1: 1.0
 - Angle -
 active: true
 lowMin: 0.0
@@ -107,8 +109,8 @@ timeline0: 0.0
 - Transparency -
 lowMin: 0.0
 lowMax: 0.0
-highMin: 0.9
-highMax: 0.9
+highMin: 0.90
+highMax: 0.90
 relative: false
 scalingCount: 2
 scaling0: 1.0
