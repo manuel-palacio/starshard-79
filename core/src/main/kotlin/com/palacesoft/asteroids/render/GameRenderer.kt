@@ -42,15 +42,37 @@ class GameRenderer(
         sr.projectionMatrix = camera.combined
         batch.projectionMatrix = camera.combined
 
-        // Pass 1: Background starfield
+        // Pass 1: Background starfield (never bloomed)
         starfield.render(sr)
 
-        // Pass 2: Geometry (asteroids, ship)
+        // Pass 2: Draw emissive geometry to screen at full resolution
+        drawEmissive(sr, world)
+
+        // Pass 3: Capture same geometry into bloom FBO, blur, additively composite
+        if (Settings.bloomEnabled && bloomPass != null) {
+            bloomPass!!.beginCapture()
+            sr.projectionMatrix = camera.combined   // world-space projection into FBO
+            drawEmissive(sr, world)
+            bloomPass!!.endCapture()
+            sr.projectionMatrix  = camera.combined  // restore after viewport reset
+            batch.projectionMatrix = camera.combined
+            bloomPass!!.render()
+        }
+
+        // Pass 4: Particles (after bloom overlay)
+        vfx?.renderParticles()
+
+        // Pass 5: HUD (reset camera shake first)
+        camera.position.set(Settings.WORLD_WIDTH / 2f, Settings.WORLD_HEIGHT / 2f, 0f)
+        camera.update()
+        hudRenderer?.render(world)
+    }
+
+    private fun drawEmissive(sr: ShapeRenderer, world: World) {
         astRenderer.render(sr, world.asteroids)
         saucerRend.render(sr, world.saucers)
         if (world.ship.visible) shipRenderer.render(sr, world.ship)
 
-        // Pass 3: Bullets — short white lines in direction of travel
         sr.begin(ShapeRenderer.ShapeType.Line)
         sr.color = com.badlogic.gdx.graphics.Color.WHITE
         for (b in world.bullets) {
@@ -61,14 +83,5 @@ class GameRenderer(
             sr.line(b.x - dx, b.y - dy, b.x + dx, b.y + dy)
         }
         sr.end()
-        bloomPass?.render()
-
-        // Pass 3b: Particles (after geometry, before HUD)
-        vfx?.renderParticles()
-
-        // Pass 4: HUD (reset camera shake first)
-        camera.position.set(Settings.WORLD_WIDTH / 2f, Settings.WORLD_HEIGHT / 2f, 0f)
-        camera.update()
-        hudRenderer?.render(world)
     }
 }

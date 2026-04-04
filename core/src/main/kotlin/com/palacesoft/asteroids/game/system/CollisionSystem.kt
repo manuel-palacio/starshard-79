@@ -2,8 +2,9 @@ package com.palacesoft.asteroids.game.system
 
 import com.palacesoft.asteroids.game.World
 import com.palacesoft.asteroids.game.entity.AsteroidFactory
+import com.palacesoft.asteroids.game.entity.AsteroidSize
+import com.palacesoft.asteroids.game.entity.SaucerSize
 import com.palacesoft.asteroids.util.circlesOverlap
-import com.palacesoft.asteroids.vfx.VfxManager
 
 class CollisionSystem(private val world: World) {
 
@@ -25,12 +26,12 @@ class CollisionSystem(private val world: World) {
                     ast.alive = false
                     world.score += ast.size.score
                     when (ast.size) {
-                        com.palacesoft.asteroids.game.entity.AsteroidSize.LARGE  -> world.sounds?.playBangLarge()
-                        com.palacesoft.asteroids.game.entity.AsteroidSize.MEDIUM -> world.sounds?.playBangMedium()
-                        com.palacesoft.asteroids.game.entity.AsteroidSize.SMALL  -> world.sounds?.playBangSmall()
+                        AsteroidSize.LARGE  -> world.sounds?.playBangLarge()
+                        AsteroidSize.MEDIUM -> world.sounds?.playBangMedium()
+                        AsteroidSize.SMALL  -> world.sounds?.playBangSmall()
                     }
                     world.asteroids.addAll(AsteroidFactory.split(ast))
-                    (world.vfx as? VfxManager)?.spawnExplosion(ast.x, ast.y, ast.size)
+                    world.vfx?.spawnExplosion(ast.x, ast.y, ast.size)
                     break
                 }
             }
@@ -45,7 +46,10 @@ class CollisionSystem(private val world: World) {
                 if (circlesOverlap(bullet.x, bullet.y, bullet.radius, saucer.x, saucer.y, saucer.radius)) {
                     bullet.alive = false
                     saucer.alive = false
-                    world.score += 1000
+                    world.score += if (saucer.size == SaucerSize.LARGE) 200 else 1000
+                    world.sounds?.playBangLarge()
+                    val exSize = if (saucer.size == SaucerSize.LARGE) AsteroidSize.LARGE else AsteroidSize.MEDIUM
+                    world.vfx?.spawnExplosion(saucer.x, saucer.y, exSize)
                     break
                 }
             }
@@ -59,7 +63,7 @@ class CollisionSystem(private val world: World) {
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, ast.x, ast.y, ast.radius)) {
                 world.ship.alive = false
                 world.sounds?.playShipBang()
-                (world.vfx as? VfxManager)?.spawnShipExplosion(world.ship.x, world.ship.y)
+                world.vfx?.spawnShipExplosion(world.ship.x, world.ship.y)
                 return
             }
         }

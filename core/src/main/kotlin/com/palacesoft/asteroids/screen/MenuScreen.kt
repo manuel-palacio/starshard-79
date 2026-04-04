@@ -31,6 +31,8 @@ class MenuScreen(private val game: AsteroidsGame) : Screen {
                      Settings.WORLD_WIDTH / 2f - 200f, Settings.WORLD_HEIGHT / 2f - 20f)
         subFont.draw(game.batch, "LEFT / RIGHT  -  ROTATE     UP / DRAG  -  THRUST",
                      Settings.WORLD_WIDTH / 2f - 260f, Settings.WORLD_HEIGHT / 2f - 80f)
+        subFont.draw(game.batch, "SPACE  -  FIRE     Z / SHIFT  -  HYPERSPACE (random warp)",
+                     Settings.WORLD_WIDTH / 2f - 260f, Settings.WORLD_HEIGHT / 2f - 130f)
         game.batch.end()
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE) || Gdx.input.justTouched())
             game.setScreen(GameScreen(game))

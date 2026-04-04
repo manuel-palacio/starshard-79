@@ -46,12 +46,16 @@ class BloomPass(private val batch: SpriteBatch) : Disposable {
     fun render() {
         if (!Settings.bloomEnabled) return
         val tex1 = fbo1.colorBufferTexture
-        val tex2: com.badlogic.gdx.graphics.Texture
+
+        // Save caller's projection; H-pass blits into an FBO using its own pixel-space ortho
+        val savedMatrix = batch.projectionMatrix.cpy()
+        val fboOrtho = com.badlogic.gdx.math.Matrix4().setToOrtho2D(0f, 0f, w.toFloat(), h.toFloat())
 
         // Horizontal blur: fbo1 → fbo2
         fbo2.begin()
         Gdx.gl.glViewport(0, 0, w, h)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        batch.projectionMatrix = fboOrtho
         batch.shader = shaderH
         batch.begin()
         shaderH.setUniformf("u_width", w.toFloat())
@@ -61,7 +65,10 @@ class BloomPass(private val batch: SpriteBatch) : Disposable {
         fbo2.end()
         Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
 
-        tex2 = fbo2.colorBufferTexture
+        val tex2 = fbo2.colorBufferTexture
+
+        // Restore world-space projection for the final screen blit
+        batch.projectionMatrix = savedMatrix
 
         // Vertical blur + additive blend to screen
         Gdx.gl.glEnable(GL20.GL_BLEND)
