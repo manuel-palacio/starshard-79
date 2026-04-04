@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.palacesoft.asteroids.game.World
 import com.palacesoft.asteroids.util.Settings
+import com.palacesoft.asteroids.vfx.BloomPass
 import com.palacesoft.asteroids.vfx.VfxManager
 
 class GameRenderer(
@@ -22,7 +23,7 @@ class GameRenderer(
     var vfx: VfxManager? = null
 
     // BloomPass plugged in Task 14
-    var bloomPass: Any? = null
+    var bloomPass: BloomPass? = null
 
     fun update(delta: Float, world: World) {
         starfield.update(delta, world.ship.velX, world.ship.velY)
@@ -56,6 +57,7 @@ class GameRenderer(
             if (b.alive) sr.circle(b.x, b.y, b.radius)
         }
         sr.end()
+        bloomPass?.render()
 
         // Pass 3b: Particles (after geometry, before HUD)
         vfx?.renderParticles()
