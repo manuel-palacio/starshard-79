@@ -249,6 +249,12 @@ class SoundManager {
     fun playShipBang()   { if (Settings.sfxEnabled) { bangShip.play(0.92f);   duckTimer = 0.8f } }
     fun playSaucerFire() { if (Settings.sfxEnabled) saucerFire.play(0.58f) }
 
+    /** Stop looping sounds without releasing GL resources — call from GameScreen.pause(). */
+    fun pauseLoops() {
+        if (thrustPlaying)  { thrust.stop(thrustId);         thrustPlaying  = false }
+        if (saucerPlaying)  { saucerWarp.stop(saucerWarpId); saucerPlaying  = false }
+    }
+
     fun dispose() {
         thrust.stop(); saucerWarp.stop()
         listOf(fire, bangLarge, bangMedium, bangSmall, bangShip,

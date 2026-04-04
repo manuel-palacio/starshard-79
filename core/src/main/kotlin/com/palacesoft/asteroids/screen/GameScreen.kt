@@ -9,23 +9,24 @@ import com.palacesoft.asteroids.events.GameEventBus
 import com.palacesoft.asteroids.render.GameRenderer
 import com.palacesoft.asteroids.render.HudRenderer
 import com.palacesoft.asteroids.render.PostProcessingPipeline
-import com.palacesoft.asteroids.audio.SoundManager
 import com.palacesoft.asteroids.vfx.VfxManager
 
 class GameScreen(private val game: AsteroidsGame) : Screen {
     private val world        = World()
     private val inputHandler = InputHandler(world.input)
     private val vfx          = VfxManager(game.sr, game.batch)
-    private val sounds       = SoundManager()
+    private val sounds       = game.sounds   // singleton — synthesised once in AsteroidsGame
     private val renderer     = GameRenderer(game.camera, game.batch, game.sr)
-    private val pipeline     = PostProcessingPipeline(game.batch)
+    private var pipeline     = PostProcessingPipeline(game.batch)
+
+    private var disposed = false
 
     init {
         renderer.hudRenderer  = HudRenderer(game.batch, game.camera)
         renderer.inputHandler = inputHandler
         renderer.vfx          = vfx
         renderer.pipeline     = pipeline
-        world.vfx = vfx
+        world.vfx   = vfx
         world.sounds = sounds
         vfx.subscribeToEvents()
         world.start()
@@ -51,15 +52,32 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     }
 
     override fun show()   { Gdx.input.isCatchBackKey = true }
-    override fun hide()   {}
-    override fun pause()  {}
-    override fun resume() {}
+
+    // Fix 1: forward hide() → dispose() so that GameEventBus.clear() and resource
+    // disposal always happen on screen transitions, not just on app exit.
+    override fun hide()   { dispose() }
+
+    // Fix 3: stop looping audio when the app is backgrounded (Android home button).
+    override fun pause()  { sounds.pauseLoops() }
+
+    // Fix 3: recreate FrameBuffer objects after GL context is restored (Android resume).
+    // BloomPass holds raw GL texture/FBO IDs — they are invalidated by context loss.
+    override fun resume() {
+        pipeline.dispose()
+        pipeline          = PostProcessingPipeline(game.batch)
+        renderer.pipeline = pipeline
+    }
+
+    // Fix 1: idempotency guard prevents double-disposal when hide() → dispose()
+    // is followed by the framework also calling dispose() on app exit.
     override fun dispose() {
+        if (disposed) return
+        disposed = true
         renderer.hudRenderer?.dispose()
         inputHandler.dispose()
         vfx.dispose()
         pipeline.dispose()
         GameEventBus.clear()
-        sounds.dispose()
+        // sounds is owned by AsteroidsGame — do not dispose here
     }
 }
