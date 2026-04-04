@@ -12,7 +12,14 @@ object Settings {
     // Override it here only for testing; prefer setting fxQuality instead.
     val bloomEnabled get() = fxSettings.enableBloom
 
-    var sfxEnabled   = true
+    var sfxEnabled         = true
+
+    /**
+     * False on first run — WaveSystem spawns the scripted tutorial wave and
+     * HudRenderer shows contextual control hints. Set to true after Wave 1
+     * completes so subsequent sessions skip directly to gameplay.
+     */
+    var tutorialCompleted  = false
 
     // ── FX quality ────────────────────────────────────────────────────────────
     // Default: MEDIUM (Android-safe). Override to HIGH from DesktopLauncher

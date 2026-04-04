@@ -30,6 +30,8 @@ class WaveSystem(private val world: World) {
             betweenWaveTimer += delta
             if (betweenWaveTimer >= BETWEEN_WAVE_GAP) {
                 betweenWaveTimer = 0f
+                // Tutorial is complete once the player has cleared the first wave
+                if (world.wave == 1) Settings.tutorialCompleted = true
                 world.wave++
                 spawnWave()
             }
@@ -45,13 +47,33 @@ class WaveSystem(private val world: World) {
     }
 
     fun spawnWave() {
+        if (world.wave == 1 && !Settings.tutorialCompleted) {
+            spawnTutorialWave()
+        } else {
+            spawnNormalWave()
+        }
+        GameEventBus.emit(GameEvent.WaveStarted(world.wave))
+    }
+
+    /**
+     * Scripted Wave 1: single LARGE asteroid placed off-centre toward the
+     * right edge. Drifts slowly left across the wrap boundary — teaches
+     * wraparound without a prompt. Splitting teaches fragment danger.
+     */
+    private fun spawnTutorialWave() {
+        val x = Settings.WORLD_WIDTH * 0.78f
+        val y = Settings.WORLD_HEIGHT * 0.55f
+        world.asteroids.add(AsteroidFactory.createRandom(x, y, AsteroidSize.LARGE))
+        world.waveMaxAsteroids = 1
+    }
+
+    private fun spawnNormalWave() {
         val count = world.wave * 2 + 2
         repeat(count) {
             val (x, y) = randomEdgePosition()
             world.asteroids.add(AsteroidFactory.createRandom(x, y, AsteroidSize.LARGE))
         }
         world.waveMaxAsteroids = count.coerceAtLeast(1)
-        GameEventBus.emit(GameEvent.WaveStarted(world.wave))
     }
 
     private fun randomEdgePosition(): Pair<Float, Float> = when (Random.nextInt(4)) {

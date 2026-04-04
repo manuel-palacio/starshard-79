@@ -17,9 +17,8 @@ import com.palacesoft.asteroids.vfx.BloomPass
  * Bloom is enabled only at HIGH quality (Settings.fxSettings.enableBloom).
  * On MEDIUM and LOW it is fully bypassed with zero cost.
  *
- * TODO (Task C): Replace Gaussian blur in BloomPass with thresholded Kawase blur
- * (quarter-res, 2 passes, luminance threshold ~0.55). This will improve performance
- * and give a cleaner glow on the vector lines.
+ * BloomPass uses thresholded Kawase blur (quarter-res, 2 passes, luminance
+ * threshold 0.55) for clean glow on vector lines with low mobile overhead.
  */
 class PostProcessingPipeline(batch: SpriteBatch) : Disposable {
 

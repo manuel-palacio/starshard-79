@@ -69,10 +69,12 @@ class GameRenderer(
         batch.projectionMatrix = camera.combined
         vfx?.renderTextEffects()
 
-        // Pass 6: HUD (reset camera shake first)
+        // Pass 6: HUD and touch controls (shake-free camera)
         camera.position.set(Settings.WORLD_WIDTH / 2f, Settings.WORLD_HEIGHT / 2f, 0f)
         camera.update()
         hudRenderer?.render(world)
+        sr.projectionMatrix = camera.combined
+        hudRenderer?.renderTouchButtons(sr)
     }
 
     private fun drawEmissive(sr: ShapeRenderer, world: World) {

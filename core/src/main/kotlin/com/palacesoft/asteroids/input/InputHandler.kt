@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 
 class InputHandler(private val gameInput: GameInput) {
-    private val touch = TouchControls(gameInput)
+    private val touch = TouchControls()
 
     fun poll() {
         gameInput.rotateLeft  = Gdx.input.isKeyPressed(Keys.LEFT)  || Gdx.input.isKeyPressed(Keys.A)
