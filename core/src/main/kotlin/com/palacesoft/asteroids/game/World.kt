@@ -1,5 +1,7 @@
 package com.palacesoft.asteroids.game
 
+import com.palacesoft.asteroids.events.GameEvent
+import com.palacesoft.asteroids.events.GameEventBus
 import com.palacesoft.asteroids.game.entity.*
 import com.palacesoft.asteroids.game.system.BulletPool
 import com.palacesoft.asteroids.game.system.CollisionSystem
@@ -84,6 +86,7 @@ class World {
         if (input.fire && fireCooldown <= 0f) {
             bulletPool.acquire(ship, bullets)
             sounds?.playFire()
+            GameEventBus.emit(GameEvent.BulletFired(ship.x, ship.y, ship.rotation))
             fireCooldown = FIRE_RATE
         }
         if (input.hyperspace) {

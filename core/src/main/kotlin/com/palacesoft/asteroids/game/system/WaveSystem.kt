@@ -1,5 +1,7 @@
 package com.palacesoft.asteroids.game.system
 
+import com.palacesoft.asteroids.events.GameEvent
+import com.palacesoft.asteroids.events.GameEventBus
 import com.palacesoft.asteroids.game.World
 import com.palacesoft.asteroids.game.entity.AsteroidFactory
 import com.palacesoft.asteroids.game.entity.AsteroidSize
@@ -49,6 +51,7 @@ class WaveSystem(private val world: World) {
             world.asteroids.add(AsteroidFactory.createRandom(x, y, AsteroidSize.LARGE))
         }
         world.waveMaxAsteroids = count.coerceAtLeast(1)
+        GameEventBus.emit(GameEvent.WaveStarted(world.wave))
     }
 
     private fun randomEdgePosition(): Pair<Float, Float> = when (Random.nextInt(4)) {
@@ -67,6 +70,7 @@ class WaveSystem(private val world: World) {
         saucer.velY = 0f
         saucer.alive = true
         saucer.shootTimer = 0f
+        GameEventBus.emit(GameEvent.SaucerSpawned(saucer.x, saucer.y))
     }
 
     private fun updateSaucers(delta: Float) {
@@ -95,6 +99,7 @@ class WaveSystem(private val world: World) {
             respawnTimer = 0f
             world.lives--
             world.ship.reset()
+            GameEventBus.emit(GameEvent.PlayerRespawned(world.ship.x, world.ship.y))
         }
     }
 

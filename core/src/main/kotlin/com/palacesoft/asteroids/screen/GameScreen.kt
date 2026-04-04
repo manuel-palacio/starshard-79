@@ -41,7 +41,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
               world.ship.thrusting && world.ship.alive,
               world.saucers.any { it.alive })
         renderer.update(dt, world)
-        renderer.render(world, vfx.offsetX, vfx.offsetY)
+        renderer.render(world, dt, vfx.offsetX, vfx.offsetY)
         if (world.gameOver) game.setScreen(GameOverScreen(game, world.score))
     }
 

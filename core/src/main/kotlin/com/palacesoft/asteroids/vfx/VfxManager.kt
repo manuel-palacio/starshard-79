@@ -131,11 +131,13 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
     }
 
     private fun onWaveStarted(e: GameEvent.WaveStarted) {
-        waveRings.acquire()?.spawn()
+        // Theatrical ring — only on HIGH quality (premium polish, not original Asteroids)
+        if (fx.enableWaveRing) waveRings.acquire()?.spawn()
     }
 
     private fun onScoreAwarded(e: GameEvent.ScoreAwarded) {
-        textFx.spawn(e.x, e.y, e.amount, Settings.fxSettings.popupLifetime)
+        // Score popups are HIGH-only; LOW/MEDIUM use HUD-corner score (1979 identity)
+        if (fx.maxScorePopups > 0) textFx.spawn(e.x, e.y, e.amount, fx.popupLifetime)
     }
 
     // ── Per-frame update ──────────────────────────────────────────────────────
