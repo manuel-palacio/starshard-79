@@ -27,6 +27,7 @@ class World {
     val collisionSystem  = CollisionSystem(this)
     val waveSystem       = WaveSystem(this)
     var vfx: VfxManager? = null
+    var sounds: com.palacesoft.asteroids.audio.SoundManager? = null
 
     private val ROTATE_SPEED = 200f
     private val THRUST_FORCE = 400f
@@ -78,6 +79,7 @@ class World {
         fireCooldown -= delta
         if (input.fire && fireCooldown <= 0f) {
             bulletPool.acquire(ship, bullets)
+            sounds?.playFire()
             fireCooldown = FIRE_RATE
         }
         if (input.hyperspace) {

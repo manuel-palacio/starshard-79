@@ -7,6 +7,7 @@ import com.palacesoft.asteroids.game.World
 import com.palacesoft.asteroids.input.InputHandler
 import com.palacesoft.asteroids.render.GameRenderer
 import com.palacesoft.asteroids.render.HudRenderer
+import com.palacesoft.asteroids.audio.SoundManager
 import com.palacesoft.asteroids.vfx.BloomPass
 import com.palacesoft.asteroids.vfx.VfxManager
 
@@ -14,6 +15,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     private val world        = World()
     private val inputHandler = InputHandler(world.input)
     private val vfx          = VfxManager(game.sr)
+    private val sounds       = SoundManager()
     private val renderer     = GameRenderer(game.camera, game.batch, game.sr)
     private val bloom        = BloomPass(game.batch)
 
@@ -22,6 +24,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
         renderer.vfx = vfx
         renderer.bloomPass = bloom
         world.vfx = vfx
+        world.sounds = sounds
         world.start()
         Gdx.input.isCatchBackKey = true
     }
@@ -32,6 +35,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
         world.update(dt)
         vfx.update(dt)
         vfx.updateThrust(dt, world.ship)
+        sounds.update(dt, world.asteroids.size)
         renderer.update(dt, world)
         renderer.render(world, vfx.offsetX, vfx.offsetY)
         if (world.gameOver) game.setScreen(GameOverScreen(game, world.score))
@@ -45,5 +49,5 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     override fun hide()   {}
     override fun pause()  {}
     override fun resume() {}
-    override fun dispose() { renderer.hudRenderer?.dispose(); bloom.dispose() }
+    override fun dispose() { renderer.hudRenderer?.dispose(); bloom.dispose(); sounds.dispose() }
 }

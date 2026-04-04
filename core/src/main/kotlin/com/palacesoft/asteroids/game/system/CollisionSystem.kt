@@ -24,6 +24,11 @@ class CollisionSystem(private val world: World) {
                     bullet.alive = false
                     ast.alive = false
                     world.score += ast.size.score
+                    when (ast.size) {
+                        com.palacesoft.asteroids.game.entity.AsteroidSize.LARGE  -> world.sounds?.playBangLarge()
+                        com.palacesoft.asteroids.game.entity.AsteroidSize.MEDIUM -> world.sounds?.playBangMedium()
+                        com.palacesoft.asteroids.game.entity.AsteroidSize.SMALL  -> world.sounds?.playBangSmall()
+                    }
                     world.asteroids.addAll(AsteroidFactory.split(ast))
                     (world.vfx as? VfxManager)?.spawnExplosion(ast.x, ast.y, ast.size)
                     break
@@ -53,6 +58,7 @@ class CollisionSystem(private val world: World) {
             if (!ast.alive) continue
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, ast.x, ast.y, ast.radius)) {
                 world.ship.alive = false
+                world.sounds?.playShipBang()
                 (world.vfx as? VfxManager)?.spawnShipExplosion(world.ship.x, world.ship.y)
                 return
             }
