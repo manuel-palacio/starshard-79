@@ -76,6 +76,8 @@ class CollisionSystem(private val world: World) {
             if (!saucer.alive) continue
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, saucer.x, saucer.y, saucer.radius)) {
                 world.ship.alive = false
+                world.sounds?.playShipBang()
+                GameEventBus.emit(GameEvent.PlayerHit(world.ship.x, world.ship.y))
                 return
             }
         }
@@ -88,6 +90,8 @@ class CollisionSystem(private val world: World) {
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, bullet.x, bullet.y, bullet.radius)) {
                 bullet.alive = false
                 world.ship.alive = false
+                world.sounds?.playShipBang()
+                GameEventBus.emit(GameEvent.PlayerHit(world.ship.x, world.ship.y))
                 return
             }
         }

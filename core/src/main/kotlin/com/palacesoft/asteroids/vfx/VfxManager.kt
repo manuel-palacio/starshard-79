@@ -37,7 +37,10 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
 
     private val fx = Settings.fxSettings
 
-    // ── Effect pools (procedural) ─────────────────────────────────────────────
+    // ── Effect pools ──────────────────────────────────────────────────────────
+    // Pool capacity is fixed at HIGH-quality maximum to avoid GC from
+    // reallocation if quality changes at runtime. FxSettings.maxTransientEffects
+    // is a runtime spawn cap (enforced in acquire() call sites), not a pool size.
     private val explosions  = EffectPool(24)  { ExplosionEffect() }
     private val hitSparks   = EffectPool(24)  { HitSparkEffect() }
     private val flashes     = EffectPool(4)   { MuzzleFlashEffect() }
@@ -82,8 +85,7 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
 
     private fun onBulletFired(e: GameEvent.BulletFired) {
         flashes.acquire()?.spawn(e.x, e.y)
-        // HIGH only: additive particle glow over procedural flash
-        if (fx.enableParticles && Settings.fxQuality == EffectQuality.HIGH) {
+        if (fx.enableParticles) {
             particles.spawnMuzzleGlow(e.x, e.y)
         }
     }

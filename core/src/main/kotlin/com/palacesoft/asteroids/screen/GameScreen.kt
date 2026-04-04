@@ -5,10 +5,11 @@ import com.badlogic.gdx.Screen
 import com.palacesoft.asteroids.AsteroidsGame
 import com.palacesoft.asteroids.game.World
 import com.palacesoft.asteroids.input.InputHandler
+import com.palacesoft.asteroids.events.GameEventBus
 import com.palacesoft.asteroids.render.GameRenderer
 import com.palacesoft.asteroids.render.HudRenderer
+import com.palacesoft.asteroids.render.PostProcessingPipeline
 import com.palacesoft.asteroids.audio.SoundManager
-import com.palacesoft.asteroids.vfx.BloomPass
 import com.palacesoft.asteroids.vfx.VfxManager
 
 class GameScreen(private val game: AsteroidsGame) : Screen {
@@ -17,12 +18,12 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     private val vfx          = VfxManager(game.sr, game.batch)
     private val sounds       = SoundManager()
     private val renderer     = GameRenderer(game.camera, game.batch, game.sr)
-    private val bloom        = BloomPass(game.batch)
+    private val pipeline     = PostProcessingPipeline(game.batch)
 
     init {
         renderer.hudRenderer = HudRenderer(game.batch, game.camera)
         renderer.vfx = vfx
-        renderer.bloomPass = bloom
+        renderer.pipeline = pipeline
         world.vfx = vfx
         world.sounds = sounds
         vfx.subscribeToEvents()
@@ -52,5 +53,11 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     override fun hide()   {}
     override fun pause()  {}
     override fun resume() {}
-    override fun dispose() { renderer.hudRenderer?.dispose(); bloom.dispose(); sounds.dispose() }
+    override fun dispose() {
+        renderer.hudRenderer?.dispose()
+        vfx.dispose()
+        pipeline.dispose()
+        GameEventBus.clear()
+        sounds.dispose()
+    }
 }

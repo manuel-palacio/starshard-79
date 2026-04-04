@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.palacesoft.asteroids.game.World
 import com.palacesoft.asteroids.util.Settings
-import com.palacesoft.asteroids.vfx.BloomPass
 import com.palacesoft.asteroids.vfx.VfxManager
 
 class GameRenderer(
@@ -21,9 +20,7 @@ class GameRenderer(
     private val saucerRend   = SaucerRenderer()
     var hudRenderer: HudRenderer? = null
     var vfx: VfxManager? = null
-
-    // BloomPass plugged in Task 14
-    var bloomPass: BloomPass? = null
+    var pipeline: PostProcessingPipeline? = null
 
     fun update(delta: Float, world: World) {
         starfield.update(delta, world.ship.velX, world.ship.velY)
@@ -49,23 +46,28 @@ class GameRenderer(
         drawEmissive(sr, world)
 
         // Pass 3: Capture same geometry into bloom FBO, blur, additively composite
-        if (Settings.bloomEnabled && bloomPass != null) {
-            bloomPass!!.beginCapture()
+        if (Settings.bloomEnabled && pipeline != null) {
+            pipeline!!.beginCapture()
             sr.projectionMatrix = camera.combined   // world-space projection into FBO
             drawEmissive(sr, world)
-            bloomPass!!.endCapture()
+            vfx?.renderBloomedEffects()
+            pipeline!!.endCapture()
             sr.projectionMatrix  = camera.combined  // restore after viewport reset
             batch.projectionMatrix = camera.combined
-            bloomPass!!.render()
+            pipeline!!.render()
         }
 
-        // Pass 4: Unblomed procedural effects + thrust particles
+        // Pass 4: Unbloomed procedural effects + thrust particles
         vfx?.renderUnbloomedEffects()
         vfx?.renderThrustParticles()
 
         // Pass 5: Particle overlays (additive, SpriteBatch world space)
         batch.projectionMatrix = camera.combined
         vfx?.renderParticleOverlays(batch, 0f)
+
+        // Score popups — always crisp, never bloomed
+        batch.projectionMatrix = camera.combined
+        vfx?.renderTextEffects()
 
         // Pass 6: HUD (reset camera shake first)
         camera.position.set(Settings.WORLD_WIDTH / 2f, Settings.WORLD_HEIGHT / 2f, 0f)
