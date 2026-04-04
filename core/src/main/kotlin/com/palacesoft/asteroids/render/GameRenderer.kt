@@ -59,10 +59,15 @@ class GameRenderer(
             bloomPass!!.render()
         }
 
-        // Pass 4: Particles (after bloom overlay)
-        vfx?.renderParticles()
+        // Pass 4: Unblomed procedural effects + thrust particles
+        vfx?.renderUnbloomedEffects()
+        vfx?.renderThrustParticles()
 
-        // Pass 5: HUD (reset camera shake first)
+        // Pass 5: Particle overlays (additive, SpriteBatch world space)
+        batch.projectionMatrix = camera.combined
+        vfx?.renderParticleOverlays(batch, 0f)
+
+        // Pass 6: HUD (reset camera shake first)
         camera.position.set(Settings.WORLD_WIDTH / 2f, Settings.WORLD_HEIGHT / 2f, 0f)
         camera.update()
         hudRenderer?.render(world)

@@ -1,5 +1,7 @@
 package com.palacesoft.asteroids.game.system
 
+import com.palacesoft.asteroids.events.GameEvent
+import com.palacesoft.asteroids.events.GameEventBus
 import com.palacesoft.asteroids.game.World
 import com.palacesoft.asteroids.game.entity.AsteroidFactory
 import com.palacesoft.asteroids.game.entity.AsteroidSize
@@ -31,7 +33,7 @@ class CollisionSystem(private val world: World) {
                         AsteroidSize.SMALL  -> world.sounds?.playBangSmall()
                     }
                     world.asteroids.addAll(AsteroidFactory.split(ast))
-                    world.vfx?.spawnExplosion(ast.x, ast.y, ast.size)
+                    GameEventBus.emit(GameEvent.AsteroidDestroyed(ast.x, ast.y, ast.size))
                     break
                 }
             }
@@ -48,8 +50,7 @@ class CollisionSystem(private val world: World) {
                     saucer.alive = false
                     world.score += if (saucer.size == SaucerSize.LARGE) 200 else 1000
                     world.sounds?.playBangLarge()
-                    val exSize = if (saucer.size == SaucerSize.LARGE) AsteroidSize.LARGE else AsteroidSize.MEDIUM
-                    world.vfx?.spawnExplosion(saucer.x, saucer.y, exSize)
+                    GameEventBus.emit(GameEvent.SaucerDestroyed(saucer.x, saucer.y))
                     break
                 }
             }
@@ -63,7 +64,7 @@ class CollisionSystem(private val world: World) {
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, ast.x, ast.y, ast.radius)) {
                 world.ship.alive = false
                 world.sounds?.playShipBang()
-                world.vfx?.spawnShipExplosion(world.ship.x, world.ship.y)
+                GameEventBus.emit(GameEvent.PlayerHit(world.ship.x, world.ship.y))
                 return
             }
         }

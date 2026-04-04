@@ -14,7 +14,7 @@ import com.palacesoft.asteroids.vfx.VfxManager
 class GameScreen(private val game: AsteroidsGame) : Screen {
     private val world        = World()
     private val inputHandler = InputHandler(world.input)
-    private val vfx          = VfxManager(game.sr)
+    private val vfx          = VfxManager(game.sr, game.batch)
     private val sounds       = SoundManager()
     private val renderer     = GameRenderer(game.camera, game.batch, game.sr)
     private val bloom        = BloomPass(game.batch)
@@ -25,6 +25,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
         renderer.bloomPass = bloom
         world.vfx = vfx
         world.sounds = sounds
+        vfx.subscribeToEvents()
         world.start()
         Gdx.input.isCatchBackKey = true
     }
