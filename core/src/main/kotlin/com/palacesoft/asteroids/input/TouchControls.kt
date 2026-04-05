@@ -49,6 +49,10 @@ class TouchControls : Disposable {
     // Button label font — owned here so disposal is co-located with usage
     private val btnFont = BitmapFont().apply { data.setScale(1.4f) }
 
+    // Pre-computed layouts — labels never change, so allocate once at construction
+    private val labelLayouts = listOf("◁", "▲", "▷", "FIRE", "★")
+        .map { GlyphLayout(btnFont, it) }
+
     fun poll(input: GameInput) {
         val sw = Gdx.graphics.width.toFloat()
         val sh = Gdx.graphics.height.toFloat()
@@ -131,16 +135,13 @@ class TouchControls : Disposable {
         sr.end()
 
         batch.begin()
-        fun drawLabel(text: String, cx: Float) {
-            val gl = GlyphLayout(btnFont, text)
-            btnFont.color = labelColor
-            btnFont.draw(batch, text, cx - gl.width / 2f, bH / 2f + gl.height / 2f)
+        btnFont.color = labelColor
+        val centers = listOf((x0+x1)/2f, (x1+x2)/2f, (x2+x3)/2f, (x3+x4)/2f, (x4+x5)/2f)
+        val labels  = listOf("◁", "▲", "▷", "FIRE", "★")
+        for (i in labels.indices) {
+            val gl = labelLayouts[i]
+            btnFont.draw(batch, labels[i], centers[i] - gl.width / 2f, bH / 2f + gl.height / 2f)
         }
-        drawLabel("◁",   (x0 + x1) / 2f)
-        drawLabel("▲",   (x1 + x2) / 2f)
-        drawLabel("▷",   (x2 + x3) / 2f)
-        drawLabel("FIRE", (x3 + x4) / 2f)
-        drawLabel("★",   (x4 + x5) / 2f)
         batch.end()
     }
 

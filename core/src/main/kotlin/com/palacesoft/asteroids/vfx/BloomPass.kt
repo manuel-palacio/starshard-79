@@ -43,6 +43,8 @@ class BloomPass(private val batch: SpriteBatch) : Disposable {
     private val shaderThreshold = loadShader("shaders/bloom.vert", "shaders/threshold.frag")
     private val shaderKawase    = loadShader("shaders/bloom.vert", "shaders/kawase.frag")
 
+    private val blitOrtho = Matrix4()
+
     init {
         ShaderProgram.pedantic = false
     }
@@ -120,8 +122,8 @@ class BloomPass(private val batch: SpriteBatch) : Disposable {
         dst.begin()
         Gdx.gl.glViewport(0, 0, dst.width, dst.height)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        val ortho = Matrix4().setToOrtho2D(0f, 0f, dst.width.toFloat(), dst.height.toFloat())
-        batch.projectionMatrix = ortho
+        blitOrtho.setToOrtho2D(0f, 0f, dst.width.toFloat(), dst.height.toFloat())
+        batch.projectionMatrix = blitOrtho
         batch.shader = shader
         batch.begin()
         uniforms()

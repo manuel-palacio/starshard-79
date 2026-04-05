@@ -7,6 +7,7 @@ class Saucer(val size: SaucerSize) {
     var velX = 0f; var velY = 0f
     var alive = false
     var shootTimer = 0f
+    var sineTimer = 0f
     val radius get() = if (size == SaucerSize.LARGE) 22f else 11f
 
     companion object {

@@ -27,7 +27,6 @@ class AsteroidsGame : Game() {
     override fun dispose() {
         batch.dispose()
         sr.dispose()
-        screen?.dispose()
         sounds.dispose()
     }
 }

@@ -92,15 +92,17 @@ class WaveSystem(private val world: World) {
         saucer.velY = 0f
         saucer.alive = true
         saucer.shootTimer = 0f
+        saucer.sineTimer = 0f
         GameEventBus.emit(GameEvent.SaucerSpawned(saucer.x, saucer.y))
     }
 
     private fun updateSaucers(delta: Float) {
         for (saucer in world.saucers) {
             if (!saucer.alive) continue
+            saucer.sineTimer += delta
             saucer.x += saucer.velX * delta
             saucer.y += saucer.velY * delta
-            saucer.velY = sin(saucer.x * 0.005f) * 60f
+            saucer.velY = sin(saucer.sineTimer * 2.5f) * 60f
 
             saucer.shootTimer += delta
             if (saucer.shootTimer >= Saucer.SHOOT_INTERVAL) {
@@ -119,7 +121,6 @@ class WaveSystem(private val world: World) {
         respawnTimer += delta
         if (respawnTimer >= 2f) {
             respawnTimer = 0f
-            world.lives--
             world.ship.reset()
             GameEventBus.emit(GameEvent.PlayerRespawned(world.ship.x, world.ship.y))
         }

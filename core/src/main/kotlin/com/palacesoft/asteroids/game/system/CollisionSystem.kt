@@ -3,6 +3,7 @@ package com.palacesoft.asteroids.game.system
 import com.palacesoft.asteroids.events.GameEvent
 import com.palacesoft.asteroids.events.GameEventBus
 import com.palacesoft.asteroids.game.World
+import com.palacesoft.asteroids.game.entity.Asteroid
 import com.palacesoft.asteroids.game.entity.AsteroidFactory
 import com.palacesoft.asteroids.game.entity.AsteroidSize
 import com.palacesoft.asteroids.game.entity.SaucerSize
@@ -19,6 +20,7 @@ class CollisionSystem(private val world: World) {
     }
 
     private fun checkBulletsVsAsteroids() {
+        val toAdd = mutableListOf<Asteroid>()
         for (bullet in world.bullets) {
             if (!bullet.alive || !bullet.fromPlayer) continue
             for (ast in world.asteroids) {
@@ -32,13 +34,14 @@ class CollisionSystem(private val world: World) {
                         AsteroidSize.MEDIUM -> world.sounds?.playBangMedium()
                         AsteroidSize.SMALL  -> world.sounds?.playBangSmall()
                     }
-                    world.asteroids.addAll(AsteroidFactory.split(ast))
+                    toAdd.addAll(AsteroidFactory.split(ast))
                     GameEventBus.emit(GameEvent.AsteroidDestroyed(ast.x, ast.y, ast.size))
                     GameEventBus.emit(GameEvent.ScoreAwarded(ast.x, ast.y, ast.size.score))
                     break
                 }
             }
         }
+        world.asteroids.addAll(toAdd)
     }
 
     private fun checkBulletsVsSaucers() {
@@ -60,14 +63,19 @@ class CollisionSystem(private val world: World) {
         }
     }
 
+    private fun killShip() {
+        world.ship.alive = false
+        world.lives--
+        world.sounds?.playShipBang()
+        GameEventBus.emit(GameEvent.PlayerHit(world.ship.x, world.ship.y))
+    }
+
     private fun checkShipVsAsteroids() {
         if (!world.ship.alive || world.ship.invulnerableTimer > 0f) return
         for (ast in world.asteroids) {
             if (!ast.alive) continue
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, ast.x, ast.y, ast.radius)) {
-                world.ship.alive = false
-                world.sounds?.playShipBang()
-                GameEventBus.emit(GameEvent.PlayerHit(world.ship.x, world.ship.y))
+                killShip()
                 return
             }
         }
@@ -78,9 +86,7 @@ class CollisionSystem(private val world: World) {
         for (saucer in world.saucers) {
             if (!saucer.alive) continue
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, saucer.x, saucer.y, saucer.radius)) {
-                world.ship.alive = false
-                world.sounds?.playShipBang()
-                GameEventBus.emit(GameEvent.PlayerHit(world.ship.x, world.ship.y))
+                killShip()
                 return
             }
         }
@@ -92,9 +98,7 @@ class CollisionSystem(private val world: World) {
             if (!bullet.alive || bullet.fromPlayer) continue
             if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, bullet.x, bullet.y, bullet.radius)) {
                 bullet.alive = false
-                world.ship.alive = false
-                world.sounds?.playShipBang()
-                GameEventBus.emit(GameEvent.PlayerHit(world.ship.x, world.ship.y))
+                killShip()
                 return
             }
         }
