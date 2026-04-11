@@ -36,9 +36,10 @@ class ExplosionEffect : PooledEffect() {
         private const val MAX_DEBRIS = 16
     }
 
-    // Spawn position (fixed for the effect's lifetime)
+    // Spawn position and size (fixed for the effect's lifetime)
     private var originX = 0f
     private var originY = 0f
+    private var spawnSize = AsteroidSize.LARGE
 
     // Debris: positions relative to origin, velocities in world units/s
     private val debrisPx  = FloatArray(MAX_DEBRIS)
@@ -66,6 +67,7 @@ class ExplosionEffect : PooledEffect() {
         alive   = true
         originX = x
         originY = y
+        spawnSize = size
 
         // Size-specific configuration
         when (size) {
@@ -127,15 +129,26 @@ class ExplosionEffect : PooledEffect() {
             val ex   = wx + (vx / norm) * len
             val ey   = wy + (vy / norm) * len
 
-            // Color: full white at t=1, gold at t=0.5, fades at t=0
-            sr.setColor(1f, 0.55f + t * 0.45f, t * 0.18f, t)
+            // Size-specific debris color for visual variety
+            when (spawnSize) {
+                // LARGE: white → warm orange → fade
+                AsteroidSize.LARGE  -> sr.setColor(1f, 0.5f + t * 0.5f, t * 0.15f, t)
+                // MEDIUM: white → cyan-blue → fade
+                AsteroidSize.MEDIUM -> sr.setColor(0.5f + t * 0.5f, 0.8f + t * 0.2f, 1f, t)
+                // SMALL: white → green-yellow → fade
+                AsteroidSize.SMALL  -> sr.setColor(0.7f + t * 0.3f, 1f, 0.3f + t * 0.4f, t)
+            }
             sr.line(wx, wy, ex, ey)
         }
 
-        // Ring: expanding warm-gold halo, fades out
+        // Ring: expanding halo, color matches size
         if (ringEnabled && ringRadius > 0f) {
             val ringAlpha = t * 0.55f
-            sr.setColor(1f, 0.78f, 0.22f, ringAlpha)
+            when (spawnSize) {
+                AsteroidSize.LARGE  -> sr.setColor(1f, 0.6f, 0.15f, ringAlpha)
+                AsteroidSize.MEDIUM -> sr.setColor(0.4f, 0.8f, 1f, ringAlpha)
+                AsteroidSize.SMALL  -> sr.setColor(0.7f, 1f, 0.3f, ringAlpha)
+            }
             sr.circle(originX, originY, ringRadius, 24)
         }
     }

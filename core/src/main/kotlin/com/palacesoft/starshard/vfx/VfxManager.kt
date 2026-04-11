@@ -130,13 +130,18 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
         }
         shake.trigger(baseIntensity * fx.shakeMultiplier)
 
-        // Shatter sparks — bright white sparks that scatter outward
+        // Shatter sparks — colored by asteroid size
+        val (sr, sg, sb) = when (e.size) {
+            AsteroidSize.LARGE  -> Triple(1f, 0.6f, 0.2f)     // warm orange
+            AsteroidSize.MEDIUM -> Triple(0.5f, 0.85f, 1f)    // cyan-blue
+            AsteroidSize.SMALL  -> Triple(0.7f, 1f, 0.4f)     // green-yellow
+        }
         val sparkCount = when (e.size) {
             AsteroidSize.LARGE  -> 18
             AsteroidSize.MEDIUM -> 10
             AsteroidSize.SMALL  -> 5
         }
-        emitSparks(e.x, e.y, sparkCount, 1f, 0.9f, 0.7f, 280f, 0.4f)
+        emitSparks(e.x, e.y, sparkCount, sr, sg, sb, 280f, 0.4f)
 
         // MEDIUM+: additive particle glow overlay on top of procedural debris
         if (fx.enableParticles) {

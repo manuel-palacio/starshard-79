@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.palacesoft.starshard.AsteroidsGame
@@ -13,6 +14,12 @@ import com.palacesoft.starshard.util.Settings
 
 class MenuScreen(private val game: AsteroidsGame) : Screen {
     private val starfield = Starfield()
+    private val bgTexture = Texture(Gdx.files.internal("menu_bg.png")).apply {
+        setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
+    }
+    private val titleTexture = Texture(Gdx.files.internal("title.png")).apply {
+        setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
+    }
     private val font    = BitmapFont().apply { data.setScale(3f); color = Color.CYAN }
     private val subFont = BitmapFont().apply { data.setScale(1.5f); color = Color.WHITE }
     private val settingsFont = BitmapFont().apply { data.setScale(1.5f); color = Color.GRAY }
@@ -26,16 +33,30 @@ class MenuScreen(private val game: AsteroidsGame) : Screen {
 
     override fun render(delta: Float) {
         time += delta
-        Gdx.gl.glClearColor(0f, 0f, 0.03f, 1f)
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        game.batch.projectionMatrix = game.camera.combined
+        game.batch.begin()
+        game.batch.draw(bgTexture, 0f, 0f, Settings.WORLD_WIDTH, Settings.WORLD_HEIGHT)
+        game.batch.end()
+
+        // Starfield on top of background for extra depth
         game.sr.projectionMatrix = game.camera.combined
         starfield.update(delta, 0f, 0f)
         starfield.render(game.sr)
-        val scale = 3f + 0.15f * kotlin.math.sin(time * 2f).toFloat()
-        font.data.setScale(scale)
+
         game.batch.projectionMatrix = game.camera.combined
         game.batch.begin()
-        drawCentered(font, "STARSHARD 79", Settings.WORLD_HEIGHT / 2f + 60f)
+
+        // Title image with subtle pulse
+        val titleW = 600f
+        val titleH = 150f
+        val pulse = 1f + 0.02f * kotlin.math.sin(time * 2f).toFloat()
+        val tw = titleW * pulse
+        val th = titleH * pulse
+        val tx = (Settings.WORLD_WIDTH - tw) / 2f
+        val ty = Settings.WORLD_HEIGHT / 2f + 20f
+        game.batch.draw(titleTexture, tx, ty, tw, th)
         val isTouch = Gdx.input.isPeripheralAvailable(com.badlogic.gdx.Input.Peripheral.MultitouchScreen)
         drawCentered(subFont, "TAP TO START", Settings.WORLD_HEIGHT / 2f - 20f)
         if (isTouch) {
@@ -67,5 +88,5 @@ class MenuScreen(private val game: AsteroidsGame) : Screen {
     override fun hide()   {}
     override fun pause()  {}
     override fun resume() {}
-    override fun dispose() { font.dispose(); subFont.dispose(); settingsFont.dispose() }
+    override fun dispose() { bgTexture.dispose(); titleTexture.dispose(); font.dispose(); subFont.dispose(); settingsFont.dispose() }
 }
