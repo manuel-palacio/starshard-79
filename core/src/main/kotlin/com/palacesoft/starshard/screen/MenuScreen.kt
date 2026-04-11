@@ -17,9 +17,6 @@ class MenuScreen(private val game: AsteroidsGame) : Screen {
     private val bgTexture = Texture(Gdx.files.internal("menu_bg.png")).apply {
         setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
     }
-    private val titleTexture = Texture(Gdx.files.internal("title.png")).apply {
-        setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
-    }
     private val font    = BitmapFont().apply { data.setScale(3f); color = Color.CYAN }
     private val subFont = BitmapFont().apply { data.setScale(1.5f); color = Color.WHITE }
     private val settingsFont = BitmapFont().apply { data.setScale(1.5f); color = Color.GRAY }
@@ -47,26 +44,16 @@ class MenuScreen(private val game: AsteroidsGame) : Screen {
 
         game.batch.projectionMatrix = game.camera.combined
         game.batch.begin()
-
-        // Title image with subtle pulse
-        val titleW = 600f
-        val titleH = 150f
-        val pulse = 1f + 0.02f * kotlin.math.sin(time * 2f).toFloat()
-        val tw = titleW * pulse
-        val th = titleH * pulse
-        val tx = (Settings.WORLD_WIDTH - tw) / 2f
-        val ty = Settings.WORLD_HEIGHT / 2f + 20f
-        game.batch.draw(titleTexture, tx, ty, tw, th)
         val isTouch = Gdx.input.isPeripheralAvailable(com.badlogic.gdx.Input.Peripheral.MultitouchScreen)
-        drawCentered(subFont, "TAP TO START", Settings.WORLD_HEIGHT / 2f - 20f)
+        drawCentered(subFont, "TAP TO START", 180f)
         if (isTouch) {
-            drawCentered(subFont, "LEFT SIDE: DRAG = ROTATE    DRAG UP = THRUST", Settings.WORLD_HEIGHT / 2f - 80f)
-            drawCentered(subFont, "RIGHT SIDE: TAP = FIRE    SWIPE DOWN = HYPERSPACE", Settings.WORLD_HEIGHT / 2f - 130f)
+            drawCentered(subFont, "LEFT SIDE: DRAG = ROTATE    DRAG UP = THRUST", 130f)
+            drawCentered(subFont, "RIGHT SIDE: TAP = FIRE    SWIPE DOWN = HYPERSPACE", 80f)
         } else {
-            drawCentered(subFont, "LEFT / RIGHT  -  ROTATE     UP  -  THRUST", Settings.WORLD_HEIGHT / 2f - 80f)
-            drawCentered(subFont, "SPACE  -  FIRE     Z / SHIFT  -  HYPERSPACE", Settings.WORLD_HEIGHT / 2f - 130f)
+            drawCentered(subFont, "LEFT / RIGHT  -  ROTATE     UP  -  THRUST", 130f)
+            drawCentered(subFont, "SPACE  -  FIRE     Z / SHIFT  -  HYPERSPACE", 80f)
         }
-        drawCentered(settingsFont, "S  -  SETTINGS", Settings.WORLD_HEIGHT / 2f - 200f)
+        drawCentered(settingsFont, "S  -  SETTINGS", 35f)
         game.batch.end()
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
@@ -88,5 +75,5 @@ class MenuScreen(private val game: AsteroidsGame) : Screen {
     override fun hide()   {}
     override fun pause()  {}
     override fun resume() {}
-    override fun dispose() { bgTexture.dispose(); titleTexture.dispose(); font.dispose(); subFont.dispose(); settingsFont.dispose() }
+    override fun dispose() { bgTexture.dispose(); font.dispose(); subFont.dispose(); settingsFont.dispose() }
 }
