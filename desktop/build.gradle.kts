@@ -13,7 +13,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.palacesoft.asteroids.desktop.DesktopLauncher")
+    mainClass.set("com.palacesoft.starshard.desktop.DesktopLauncher")
     applicationDefaultJvmArgs = listOf("-XstartOnFirstThread")
 }
 
@@ -22,7 +22,7 @@ tasks.named<JavaExec>("run") {
 }
 
 tasks.jar {
-    manifest { attributes["Main-Class"] = "com.palacesoft.asteroids.desktop.DesktopLauncher" }
+    manifest { attributes["Main-Class"] = "com.palacesoft.starshard.desktop.DesktopLauncher" }
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

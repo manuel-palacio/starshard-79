@@ -13,5 +13,5 @@ dependencyResolutionManagement {
         maven("https://oss.sonatype.org/content/repositories/snapshots/")
     }
 }
-rootProject.name = "asteroids"
+rootProject.name = "starshard"
 include("core", "desktop", "android")
