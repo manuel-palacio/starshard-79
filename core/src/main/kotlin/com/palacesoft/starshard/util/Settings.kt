@@ -25,7 +25,7 @@ object Settings {
         }
 
     /** Active touch control scheme. BUTTONS preserves the original feel; JOYSTICK suits players who prefer analogue-style input. */
-    var touchScheme: TouchScheme = TouchScheme.BUTTONS
+    var touchScheme: TouchScheme = TouchScheme.GESTURES
 
     /**
      * False on first run — WaveSystem spawns the scripted tutorial wave and
@@ -52,8 +52,8 @@ object Settings {
         val p = prefs() ?: return
         sfxEnabled = p.getBoolean("sfxEnabled", true)
         touchScheme = try {
-            TouchScheme.valueOf(p.getString("touchScheme", TouchScheme.BUTTONS.name))
-        } catch (_: Exception) { TouchScheme.BUTTONS }
+            TouchScheme.valueOf(p.getString("touchScheme", TouchScheme.GESTURES.name))
+        } catch (_: Exception) { TouchScheme.GESTURES }
         val savedQuality = try {
             EffectQuality.valueOf(p.getString("fxQuality", fxQuality.name))
         } catch (_: Exception) { null }

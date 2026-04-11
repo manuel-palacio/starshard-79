@@ -7,14 +7,14 @@ val gdxVersion = "1.12.1"
 val natives: Configuration by configurations.creating
 
 android {
-    compileSdk = 34
+    compileSdk = 35
     namespace = "com.palacesoft.starshard"
     defaultConfig {
         applicationId = "com.palacesoft.starshard"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 35
+        versionCode = 6
+        versionName = "1.1"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

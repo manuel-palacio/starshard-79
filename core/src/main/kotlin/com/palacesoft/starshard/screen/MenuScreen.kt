@@ -36,9 +36,15 @@ class MenuScreen(private val game: AsteroidsGame) : Screen {
         game.batch.projectionMatrix = game.camera.combined
         game.batch.begin()
         drawCentered(font, "STARSHARD 79", Settings.WORLD_HEIGHT / 2f + 60f)
-        drawCentered(subFont, "PRESS SPACE OR TAP TO START", Settings.WORLD_HEIGHT / 2f - 20f)
-        drawCentered(subFont, "LEFT / RIGHT  -  ROTATE     UP / DRAG  -  THRUST", Settings.WORLD_HEIGHT / 2f - 80f)
-        drawCentered(subFont, "SPACE  -  FIRE     Z / SHIFT  -  HYPERSPACE (random warp)", Settings.WORLD_HEIGHT / 2f - 130f)
+        val isTouch = Gdx.input.isPeripheralAvailable(com.badlogic.gdx.Input.Peripheral.MultitouchScreen)
+        drawCentered(subFont, "TAP TO START", Settings.WORLD_HEIGHT / 2f - 20f)
+        if (isTouch) {
+            drawCentered(subFont, "LEFT SIDE: DRAG = ROTATE    DRAG UP = THRUST", Settings.WORLD_HEIGHT / 2f - 80f)
+            drawCentered(subFont, "RIGHT SIDE: TAP = FIRE    SWIPE DOWN = HYPERSPACE", Settings.WORLD_HEIGHT / 2f - 130f)
+        } else {
+            drawCentered(subFont, "LEFT / RIGHT  -  ROTATE     UP  -  THRUST", Settings.WORLD_HEIGHT / 2f - 80f)
+            drawCentered(subFont, "SPACE  -  FIRE     Z / SHIFT  -  HYPERSPACE", Settings.WORLD_HEIGHT / 2f - 130f)
+        }
         drawCentered(settingsFont, "S  -  SETTINGS", Settings.WORLD_HEIGHT / 2f - 200f)
         game.batch.end()
 

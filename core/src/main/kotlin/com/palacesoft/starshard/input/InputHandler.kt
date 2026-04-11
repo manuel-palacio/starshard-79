@@ -10,6 +10,7 @@ class InputHandler(private val gameInput: GameInput) {
 
     private val touchButtons  = TouchControls()
     private val touchJoystick = JoystickControls()
+    private val touchGestures = GestureControls()
 
     fun poll() {
         gameInput.rotateLeft  = Gdx.input.isKeyPressed(Keys.LEFT)  || Gdx.input.isKeyPressed(Keys.A)
@@ -21,18 +22,15 @@ class InputHandler(private val gameInput: GameInput) {
         when (Settings.touchScheme) {
             TouchScheme.BUTTONS  -> touchButtons.poll(gameInput)
             TouchScheme.JOYSTICK -> touchJoystick.poll(gameInput)
+            TouchScheme.GESTURES -> touchGestures.poll(gameInput)
         }
     }
 
-    /**
-     * Renders the active scheme's touch overlay.
-     * Must be called with the HUD FitViewport camera active (for BUTTONS)
-     * or independently (for JOYSTICK which uses screen-pixel coordinates).
-     */
     fun renderTouchOverlay(sr: ShapeRenderer, batch: SpriteBatch) {
         when (Settings.touchScheme) {
             TouchScheme.BUTTONS  -> touchButtons.renderOverlay(sr, batch)
             TouchScheme.JOYSTICK -> touchJoystick.renderOverlay(sr)
+            TouchScheme.GESTURES -> touchGestures.renderOverlay(sr)
         }
     }
 

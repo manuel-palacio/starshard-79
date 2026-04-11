@@ -70,6 +70,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
         renderer.render(world, dt, vfx.offsetX, vfx.offsetY)
         if (world.gameOver && !gameOverHandled) {
             gameOverHandled = true
+            sounds.pauseLoops()
             game.gameServices?.submitScore(world.score)
             val previousBest = Settings.highScore
             if (world.score > previousBest) Settings.highScore = world.score
