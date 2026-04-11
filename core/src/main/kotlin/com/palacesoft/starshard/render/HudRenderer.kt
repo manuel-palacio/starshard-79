@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.palacesoft.starshard.game.World
+import com.palacesoft.starshard.game.entity.PowerUpType
 import com.palacesoft.starshard.util.Settings
 
 class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
@@ -23,6 +24,7 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
     private val bestHudFont   = BitmapFont().apply { data.setScale(1.6f); color = Color(0.7f, 0.7f, 0.7f, 1f) }
     private val waveCountFont = BitmapFont().apply { data.setScale(1.4f); color = Color.WHITE }
     private val multFont      = BitmapFont().apply { data.setScale(2.2f); color = Color.YELLOW }
+    private val powerUpFont   = BitmapFont().apply { data.setScale(1.6f) }
 
     private val scoreStyle     = Label.LabelStyle(font, Color.CYAN)
     private val waveStyle      = Label.LabelStyle(waveFont, Color.WHITE)
@@ -133,6 +135,9 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
                 Actions.fadeOut(0.8f)
             ))
         }
+        // Power-up indicator (top-right area)
+        renderPowerUpIndicator(world)
+
         stage.act()
         stage.draw()
     }
@@ -148,6 +153,65 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
             Actions.removeActor()
         ))
         stage.addActor(popup)
+    }
+
+    private fun renderPowerUpIndicator(world: World) {
+        val pus = world.powerUpSystem
+        val active = pus.activeType
+        val shield = pus.shieldActive
+
+        if (active == null && !shield) return
+
+        val batch = stage.batch
+        batch.begin()
+
+        val x = Settings.WORLD_WIDTH - 220f
+        var y = Settings.WORLD_HEIGHT - 45f
+
+        if (active != null) {
+            val pulse = if (pus.activeTimer <= 3f) ((pus.activeTimer * 6f).toInt() % 2 == 0) else true
+            if (pulse) {
+                powerUpFont.color = Color(active.r, active.g, active.b, 1f)
+                powerUpFont.draw(batch, active.label, x, y)
+            }
+            y -= 20f
+            // Timer bar
+            val barWidth = 180f * (pus.activeTimer / pus.activeDuration).coerceIn(0f, 1f)
+            // Draw bar using font as a simple rectangle approximation
+            powerUpFont.color = Color(active.r, active.g, active.b, 0.6f)
+            powerUpFont.draw(batch, "|".repeat((barWidth / 6f).toInt().coerceAtLeast(0)), x, y)
+        }
+
+        if (shield) {
+            y -= if (active != null) 30f else 0f
+            powerUpFont.color = Color(0.3f, 1f, 0.4f, 1f)
+            powerUpFont.draw(batch, "SHIELD", x, y)
+        }
+
+        batch.end()
+    }
+
+    /**
+     * Renders the power-up countdown bar using ShapeRenderer.
+     * Call after stage.draw() with HUD camera active.
+     */
+    fun renderPowerUpBar(sr: ShapeRenderer, world: World) {
+        val pus = world.powerUpSystem
+        val active = pus.activeType ?: return
+        val fraction = (pus.activeTimer / pus.activeDuration).coerceIn(0f, 1f)
+        val x = Settings.WORLD_WIDTH - 220f
+        val y = Settings.WORLD_HEIGHT - 68f
+        val barWidth = 180f
+
+        sr.begin(ShapeRenderer.ShapeType.Filled)
+        sr.color = Color(active.r, active.g, active.b, 0.5f)
+        sr.rect(x, y, barWidth * fraction, 4f)
+        sr.end()
+
+        sr.begin(ShapeRenderer.ShapeType.Line)
+        sr.color = Color(active.r, active.g, active.b, 0.3f)
+        sr.rect(x, y, barWidth, 4f)
+        sr.end()
     }
 
     /**
@@ -192,5 +256,6 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         waveCountFont.dispose()
         multFont.dispose()
         tutorialHintStyle.font.dispose()
+        powerUpFont.dispose()
     }
 }

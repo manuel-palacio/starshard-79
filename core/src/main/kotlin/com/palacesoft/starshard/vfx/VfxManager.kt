@@ -81,6 +81,10 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
                 is GameEvent.Hyperspace        -> onHyperspace(event)
                 is GameEvent.WaveStarted       -> onWaveStarted(event)
                 is GameEvent.ScoreAwarded      -> onScoreAwarded(event)
+                is GameEvent.PowerUpCollected  -> onPowerUpCollected(event)
+                is GameEvent.PowerUpExpired    -> {}
+                is GameEvent.PowerUpSpawned    -> {}
+                is GameEvent.ShieldBroken      -> onShieldBroken(event)
             }
         }
     }
@@ -89,7 +93,21 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
 
     private fun onBulletFired(e: GameEvent.BulletFired) {
         flashes.acquire()?.spawn(e.x, e.y)
-        // muzzle_glow is HIGH-only: requires bloom pipeline to look intentional
+
+        // Muzzle spark burst — small cyan sparks ejected forward from barrel
+        val rad = Math.toRadians(e.angle.toDouble()).toFloat()
+        repeat(4) {
+            val p = particlePool.acquire() ?: return
+            val spread = (Random.nextFloat() - 0.5f) * 0.8f
+            p.x = e.x; p.y = e.y
+            p.velX = cos(rad + spread) * (180f + Random.nextFloat() * 100f)
+            p.velY = sin(rad + spread) * (180f + Random.nextFloat() * 100f)
+            p.life = 0.1f + Random.nextFloat() * 0.08f; p.maxLife = p.life
+            p.r = 0.6f; p.g = 0.9f; p.b = 1f
+            p.size = 1.5f + Random.nextFloat()
+            p.alive = true; p.isLine = false
+        }
+
         if (fx.enableBloom) {
             particles.spawnMuzzleGlow(e.x, e.y)
         }
@@ -161,6 +179,19 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
         emitRing(e.fromX, e.fromY, 16, 0.6f, 0.8f, 1f, 150f, 0.4f)
         // Sparkle at arrival point
         emitRing(e.toX, e.toY, 12, 0.8f, 0.9f, 1f, 80f, 0.35f)
+    }
+
+    private fun onPowerUpCollected(e: GameEvent.PowerUpCollected) {
+        // Burst of colored sparks at pickup location
+        emitSparks(e.x, e.y, 16, e.type.r, e.type.g, e.type.b, 200f, 0.5f)
+        shake.trigger(0.15f * fx.shakeMultiplier)
+    }
+
+    private fun onShieldBroken(e: GameEvent.ShieldBroken) {
+        // Cyan flash ring + sparks
+        emitRing(e.x, e.y, 20, 0.3f, 1f, 0.4f, 120f, 0.4f)
+        emitSparks(e.x, e.y, 12, 0.3f, 1f, 0.4f, 250f, 0.35f)
+        shake.trigger(0.40f * fx.shakeMultiplier)
     }
 
     private fun onWaveStarted(@Suppress("UNUSED_PARAMETER") e: GameEvent.WaveStarted) {

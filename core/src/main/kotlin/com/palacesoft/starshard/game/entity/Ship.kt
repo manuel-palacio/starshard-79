@@ -14,6 +14,7 @@ class Ship {
     var thrusting = false
     var visible = true
     var flickerAccum = 0f
+    var lastBarrel = false  // false=left, true=right — alternates each shot
 
     fun reset() {
         x = Settings.WORLD_WIDTH / 2f

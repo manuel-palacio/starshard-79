@@ -15,9 +15,21 @@ class CollisionSystem(private val world: World) {
     fun update() {
         checkBulletsVsAsteroids()
         checkBulletsVsSaucers()
+        checkShipVsPowerUps()
         checkShipVsAsteroids()
         checkShipVsSaucers()
         checkShipVsSaucerBullets()
+    }
+
+    private fun checkShipVsPowerUps() {
+        if (!world.ship.alive) return
+        for (p in world.powerUps) {
+            if (!p.alive) continue
+            if (circlesOverlap(world.ship.x, world.ship.y, world.ship.radius, p.x, p.y, p.radius)) {
+                p.alive = false
+                world.powerUpSystem.collect(p.type, p.x, p.y)
+            }
+        }
     }
 
     private fun checkBulletsVsAsteroids() {
@@ -71,6 +83,11 @@ class CollisionSystem(private val world: World) {
     }
 
     private fun killShip() {
+        if (world.powerUpSystem.shieldActive) {
+            world.powerUpSystem.breakShield(world.ship.x, world.ship.y)
+            world.ship.invulnerableTimer = 1f
+            return
+        }
         world.ship.alive = false
         world.lives--
         world.sounds?.playShipBang()

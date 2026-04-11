@@ -19,6 +19,7 @@ class GameRenderer(
     private val shipRenderer = ShipRenderer()
     private val astRenderer  = AsteroidRenderer()
     private val saucerRend   = SaucerRenderer()
+    private val powerUpRend  = PowerUpRenderer()
     private val bulletColor  = com.badlogic.gdx.graphics.Color()
     var hudRenderer: HudRenderer? = null
     var inputHandler: InputHandler? = null
@@ -78,13 +79,18 @@ class GameRenderer(
         hudRenderer?.render(world)
         sr.projectionMatrix = camera.combined
         hudRenderer?.renderLivesIcons(sr, world.lives)
+        hudRenderer?.renderPowerUpBar(sr, world)
         inputHandler?.renderTouchOverlay(sr, batch)
     }
 
     private fun drawEmissive(sr: ShapeRenderer, world: World) {
         astRenderer.render(sr, world.asteroids)
         saucerRend.render(sr, world.saucers)
-        if (world.ship.visible) shipRenderer.render(sr, world.ship)
+        powerUpRend.render(sr, world.powerUps)
+        if (world.ship.visible) {
+            shipRenderer.render(sr, world.ship)
+            if (world.powerUpSystem.shieldActive) powerUpRend.renderShield(sr, world.ship)
+        }
 
         Gdx.gl.glLineWidth(2f)
         sr.begin(ShapeRenderer.ShapeType.Line)

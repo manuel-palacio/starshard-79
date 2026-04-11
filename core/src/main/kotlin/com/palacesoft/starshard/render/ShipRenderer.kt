@@ -43,6 +43,13 @@ class ShipRenderer {
         sr.line(ship.x + clx, ship.y + cly, ship.x + crx, ship.y + cry)
         sr.line(ship.x + crx, ship.y + cry, ship.x + cnx, ship.y + cny)
 
+        // Cannon barrels: small dots at wing tips
+        val CANNON_COLOR = Color(0.6f, 0.9f, 1f, 0.8f)
+        sr.color = CANNON_COLOR
+        sr.circle(ship.x + lx, ship.y + ly, 1.5f, 6)
+        sr.circle(ship.x + rx, ship.y + ry, 1.5f, 6)
+
+        sr.color = WHITE
         // Thrust: two flickering lines from rear notch, visible every other ~0.05s
         if (ship.thrusting && (thrustFlicker % 0.1f) < 0.05f) {
             val flameLen = r * (1.1f + (Math.random() * 0.4f).toFloat())

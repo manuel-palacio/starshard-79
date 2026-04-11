@@ -1,6 +1,7 @@
 package com.palacesoft.starshard.events
 
 import com.palacesoft.starshard.game.entity.AsteroidSize
+import com.palacesoft.starshard.game.entity.PowerUpType
 import com.palacesoft.starshard.game.entity.SaucerSize
 
 /**
@@ -19,4 +20,8 @@ sealed class GameEvent {
     class Hyperspace(val fromX: Float, val fromY: Float, val toX: Float, val toY: Float) : GameEvent()
     class WaveStarted(val wave: Int) : GameEvent()
     class ScoreAwarded(val x: Float, val y: Float, val amount: Int) : GameEvent()
+    class PowerUpSpawned(val x: Float, val y: Float, val type: PowerUpType) : GameEvent()
+    class PowerUpCollected(val x: Float, val y: Float, val type: PowerUpType) : GameEvent()
+    class PowerUpExpired(val type: PowerUpType) : GameEvent()
+    class ShieldBroken(val x: Float, val y: Float) : GameEvent()
 }

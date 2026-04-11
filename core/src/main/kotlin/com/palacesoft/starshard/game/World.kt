@@ -3,8 +3,10 @@ package com.palacesoft.starshard.game
 import com.palacesoft.starshard.events.GameEvent
 import com.palacesoft.starshard.events.GameEventBus
 import com.palacesoft.starshard.game.entity.*
+import com.palacesoft.starshard.game.entity.PowerUpType
 import com.palacesoft.starshard.game.system.BulletPool
 import com.palacesoft.starshard.game.system.CollisionSystem
+import com.palacesoft.starshard.game.system.PowerUpSystem
 import com.palacesoft.starshard.game.system.StreakSystem
 import com.palacesoft.starshard.game.system.WaveSystem
 import com.palacesoft.starshard.input.GameInput
@@ -20,6 +22,7 @@ class World {
     val asteroids   = mutableListOf<Asteroid>()
     val bullets     = mutableListOf<Bullet>()
     val saucers     = mutableListOf<Saucer>()
+    val powerUps    = mutableListOf<PowerUp>()
     var score            = 0
     var lives            = 3
     var wave             = 0
@@ -32,6 +35,7 @@ class World {
     val bulletPool       = BulletPool()
     val collisionSystem  = CollisionSystem(this)
     val waveSystem       = WaveSystem(this)
+    val powerUpSystem    = PowerUpSystem(this)
     var vfx: VfxManager? = null
     var sounds: com.palacesoft.starshard.audio.SoundManager? = null
 
@@ -57,6 +61,7 @@ class World {
         streakSystem.update(delta)
         collisionSystem.update()
         waveSystem.update(delta)
+        powerUpSystem.update(delta)
         // Track peak alive count so the heartbeat danger ratio stays valid across splits
         val alive = asteroids.count { it.alive }
         if (alive > waveMaxAsteroids) waveMaxAsteroids = alive
@@ -88,11 +93,20 @@ class World {
         ship.x = wrapCoord(ship.x, 0f, Settings.WORLD_WIDTH)
         ship.y = wrapCoord(ship.y, 0f, Settings.WORLD_HEIGHT)
         fireCooldown -= delta
+        val activeFireRate = if (powerUpSystem.activeType == PowerUpType.RAPID_FIRE) 0.11f else FIRE_RATE
         if (input.fire && fireCooldown <= 0f) {
-            bulletPool.acquire(ship, bullets)
-            sounds?.playFire()
-            GameEventBus.emit(GameEvent.BulletFired(ship.x, ship.y, ship.rotation))
-            fireCooldown = FIRE_RATE
+            val prevCount = bullets.count { it.alive }
+            when (powerUpSystem.activeType) {
+                PowerUpType.SPREAD_SHOT -> bulletPool.acquireSpread(ship, bullets)
+                PowerUpType.NOVA_BURST  -> bulletPool.acquireNova(ship, bullets)
+                else                    -> bulletPool.acquire(ship, bullets)
+            }
+            val firedBullet = bullets.lastOrNull { it.alive && it.fromPlayer }
+            if (bullets.count { it.alive } > prevCount && firedBullet != null) {
+                sounds?.playFire()
+                GameEventBus.emit(GameEvent.BulletFired(firedBullet.x, firedBullet.y, ship.rotation))
+            }
+            fireCooldown = activeFireRate
         }
         if (input.hyperspace) {
             val fromX = ship.x; val fromY = ship.y
