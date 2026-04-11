@@ -7,6 +7,7 @@ import com.palacesoft.starshard.game.entity.Asteroid
 import com.palacesoft.starshard.game.entity.AsteroidFactory
 import com.palacesoft.starshard.game.entity.AsteroidSize
 import com.palacesoft.starshard.game.entity.SaucerSize
+import com.palacesoft.starshard.game.entity.SaucerType
 import com.palacesoft.starshard.util.circlesOverlap
 
 class CollisionSystem(private val world: World) {
@@ -56,7 +57,12 @@ class CollisionSystem(private val world: World) {
                     val saucerScore = (if (saucer.size == SaucerSize.LARGE) 200 else 1000) * world.scoreMultiplier
                     world.score += saucerScore
                     world.sounds?.playBangLarge()
-                    GameEventBus.emit(GameEvent.SaucerDestroyed(saucer.x, saucer.y))
+                    val (sr, sg, sb) = when (saucer.type) {
+                        SaucerType.CLASSIC  -> Triple(1f, 1f, 1f)
+                        SaucerType.DIAMOND  -> Triple(1f, 0.8f, 0.2f)
+                        SaucerType.CRESCENT -> Triple(0.4f, 1f, 0.4f)
+                    }
+                    GameEventBus.emit(GameEvent.SaucerDestroyed(saucer.x, saucer.y, sr, sg, sb))
                     GameEventBus.emit(GameEvent.ScoreAwarded(saucer.x, saucer.y, saucerScore))
                     break
                 }

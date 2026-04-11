@@ -10,6 +10,9 @@ import com.palacesoft.starshard.events.GameEventBus
 import com.palacesoft.starshard.game.entity.AsteroidSize
 import com.palacesoft.starshard.game.entity.Ship
 import com.palacesoft.starshard.util.Settings
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.random.Random
 
 /**
  * Single FX facade. All gameplay code talks only to this class via GameEventBus.
@@ -56,8 +59,8 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
     // Particle overlays — null when disabled (LOW quality)
     private val particles = ParticleEffectManager(fx.enableParticles)
 
-    // ThrustTrail — wired through ParticlePool
-    private val particlePool = ParticlePool(80)
+    // ThrustTrail + general particle effects — shared pool
+    private val particlePool = ParticlePool(600)
     private val thrust       = ThrustTrail(particlePool)
 
     val offsetX get() = shake.offsetX
@@ -75,6 +78,7 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
                 is GameEvent.PlayerRespawned   -> onPlayerRespawned(event)
                 is GameEvent.SaucerSpawned     -> onSaucerSpawned(event)
                 is GameEvent.SaucerDestroyed   -> onSaucerDestroyed(event)
+                is GameEvent.Hyperspace        -> onHyperspace(event)
                 is GameEvent.WaveStarted       -> onWaveStarted(event)
                 is GameEvent.ScoreAwarded      -> onScoreAwarded(event)
             }
@@ -108,10 +112,17 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
         }
         shake.trigger(baseIntensity * fx.shakeMultiplier)
 
+        // Shatter sparks — bright white sparks that scatter outward
+        val sparkCount = when (e.size) {
+            AsteroidSize.LARGE  -> 18
+            AsteroidSize.MEDIUM -> 10
+            AsteroidSize.SMALL  -> 5
+        }
+        emitSparks(e.x, e.y, sparkCount, 1f, 0.9f, 0.7f, 280f, 0.4f)
+
         // MEDIUM+: additive particle glow overlay on top of procedural debris
         if (fx.enableParticles) {
             particles.spawnExplosionGlow(e.x, e.y)
-            // AsteroidHit is never emitted (every bullet hit destroys), so sparks fire here
             particles.spawnImpactSparks(e.x, e.y)
         }
     }
@@ -120,6 +131,11 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
         // Procedural debris — always visible at all quality levels
         explosions.acquire()?.spawn(e.x, e.y, AsteroidSize.LARGE)
         shake.trigger(0.80f * fx.shakeMultiplier)
+
+        // Dramatic death: large burst of cyan-white sparks + debris lines
+        emitSparks(e.x, e.y, 30, 0.5f, 0.8f, 1f, 350f, 0.7f)
+        emitDebrisLines(e.x, e.y, 12, 0.4f, 0.7f, 1f, 250f, 0.8f)
+
         if (fx.enableParticles) particles.spawnShipDeath(e.x, e.y)
     }
 
@@ -134,7 +150,17 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
     private fun onSaucerDestroyed(e: GameEvent.SaucerDestroyed) {
         explosions.acquire()?.spawn(e.x, e.y, AsteroidSize.LARGE)
         shake.trigger(0.50f * fx.shakeMultiplier)
+        // Electric death sparks in saucer's color
+        emitSparks(e.x, e.y, 20, e.r, e.g, e.b, 300f, 0.5f)
+        emitDebrisLines(e.x, e.y, 8, e.r, e.g, e.b, 200f, 0.6f)
         if (fx.enableParticles) particles.spawnExplosionGlow(e.x, e.y)
+    }
+
+    private fun onHyperspace(e: GameEvent.Hyperspace) {
+        // Shimmer ring at departure point
+        emitRing(e.fromX, e.fromY, 16, 0.6f, 0.8f, 1f, 150f, 0.4f)
+        // Sparkle at arrival point
+        emitRing(e.toX, e.toY, 12, 0.8f, 0.9f, 1f, 80f, 0.35f)
     }
 
     private fun onWaveStarted(@Suppress("UNUSED_PARAMETER") e: GameEvent.WaveStarted) {
@@ -164,6 +190,24 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
 
     fun updateThrust(delta: Float, ship: Ship) {
         thrust.update(delta, ship)
+    }
+
+    /** Emit bullet trail particles for all alive non-player bullets. */
+    fun updateBulletTrails(bullets: List<com.palacesoft.starshard.game.entity.Bullet>) {
+        for (b in bullets) {
+            if (!b.alive || b.fromPlayer) continue
+            // ~30% chance per frame to emit a trail particle (avoids flooding)
+            if (Random.nextFloat() > 0.30f) continue
+            val p = particlePool.acquire() ?: return
+            p.x = b.x + (Random.nextFloat() - 0.5f) * 4f
+            p.y = b.y + (Random.nextFloat() - 0.5f) * 4f
+            p.velX = (Random.nextFloat() - 0.5f) * 15f
+            p.velY = (Random.nextFloat() - 0.5f) * 15f
+            p.life = 0.15f; p.maxLife = 0.15f
+            p.r = b.colorR; p.g = b.colorG; p.b = b.colorB
+            p.size = 1.5f
+            p.alive = true; p.isLine = false
+        }
     }
 
     // ── Render passes ─────────────────────────────────────────────────────────
@@ -205,6 +249,54 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
         batch.begin()
         textFx.render(batch)
         batch.end()
+    }
+
+    // ── Particle emitter helpers ──────────────────────────────────────────────
+
+    /** Emit radial burst of dot sparks. */
+    private fun emitSparks(x: Float, y: Float, count: Int, r: Float, g: Float, b: Float, speed: Float, life: Float) {
+        repeat(count) {
+            val p = particlePool.acquire() ?: return
+            val angle = Random.nextFloat() * 2f * Math.PI.toFloat()
+            val spd = speed * (0.4f + Random.nextFloat() * 0.6f)
+            p.x = x; p.y = y
+            p.velX = cos(angle) * spd; p.velY = sin(angle) * spd
+            p.life = life * (0.6f + Random.nextFloat() * 0.4f); p.maxLife = p.life
+            p.r = r; p.g = g; p.b = b
+            p.size = 1.5f + Random.nextFloat() * 2.5f
+            p.alive = true; p.isLine = false
+        }
+    }
+
+    /** Emit radial burst of spinning line debris. */
+    private fun emitDebrisLines(x: Float, y: Float, count: Int, r: Float, g: Float, b: Float, speed: Float, life: Float) {
+        repeat(count) {
+            val p = particlePool.acquire() ?: return
+            val angle = Random.nextFloat() * 2f * Math.PI.toFloat()
+            val spd = speed * (0.3f + Random.nextFloat() * 0.7f)
+            p.x = x; p.y = y
+            p.velX = cos(angle) * spd; p.velY = sin(angle) * spd
+            p.life = life * (0.5f + Random.nextFloat() * 0.5f); p.maxLife = p.life
+            p.r = r; p.g = g; p.b = b
+            p.size = 2f + Random.nextFloat() * 3f
+            p.alive = true; p.isLine = true
+            p.angle = Random.nextFloat() * 360f
+            p.rotSpeed = (Random.nextFloat() - 0.5f) * 600f
+        }
+    }
+
+    /** Emit expanding ring of particles (hyperspace shimmer). */
+    private fun emitRing(x: Float, y: Float, count: Int, r: Float, g: Float, b: Float, radius: Float, life: Float) {
+        repeat(count) {
+            val p = particlePool.acquire() ?: return
+            val angle = (it.toFloat() / count) * 2f * Math.PI.toFloat()
+            p.x = x; p.y = y
+            p.velX = cos(angle) * radius; p.velY = sin(angle) * radius
+            p.life = life; p.maxLife = life
+            p.r = r; p.g = g; p.b = b
+            p.size = 2f + Random.nextFloat() * 1.5f
+            p.alive = true; p.isLine = false
+        }
     }
 
     fun dispose() {

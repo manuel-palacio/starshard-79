@@ -7,6 +7,7 @@ import com.palacesoft.starshard.game.entity.AsteroidFactory
 import com.palacesoft.starshard.game.entity.AsteroidSize
 import com.palacesoft.starshard.game.entity.Saucer
 import com.palacesoft.starshard.game.entity.SaucerSize
+import com.palacesoft.starshard.game.entity.SaucerType
 import com.palacesoft.starshard.util.Settings
 import kotlin.math.sin
 import kotlin.random.Random
@@ -55,11 +56,6 @@ class WaveSystem(private val world: World) {
         GameEventBus.emit(GameEvent.WaveStarted(world.wave))
     }
 
-    /**
-     * Scripted Wave 1: single LARGE asteroid placed off-centre toward the
-     * right edge. Drifts slowly left across the wrap boundary — teaches
-     * wraparound without a prompt. Splitting teaches fragment danger.
-     */
     private fun spawnTutorialWave() {
         val x = Settings.WORLD_WIDTH * 0.78f
         val y = Settings.WORLD_HEIGHT * 0.55f
@@ -83,20 +79,42 @@ class WaveSystem(private val world: World) {
         else -> Settings.WORLD_WIDTH to Random.nextFloat() * Settings.WORLD_HEIGHT
     }
 
+    private fun pickSaucerType(): SaucerType = when {
+        world.wave >= 7 -> arrayOf(SaucerType.CLASSIC, SaucerType.DIAMOND, SaucerType.CRESCENT).random()
+        world.wave >= 4 -> arrayOf(SaucerType.CLASSIC, SaucerType.DIAMOND).random()
+        else            -> SaucerType.CLASSIC
+    }
+
+    private fun pickSaucerSize(): SaucerSize = when {
+        world.wave >= 7 -> if (Random.nextFloat() < 0.6f) SaucerSize.SMALL else SaucerSize.LARGE
+        world.wave >= 4 -> if (Random.nextFloat() < 0.4f) SaucerSize.SMALL else SaucerSize.LARGE
+        else            -> if (Random.nextFloat() < 0.5f) SaucerSize.SMALL else SaucerSize.LARGE
+    }
+
     private fun spawnSaucer() {
         val saucer = world.saucers.firstOrNull { !it.alive } ?: return
         val fromLeft = Random.nextBoolean()
+        saucer.type = pickSaucerType()
         saucer.x = if (fromLeft) 0f else Settings.WORLD_WIDTH
         saucer.y = Random.nextFloat() * Settings.WORLD_HEIGHT
-        saucer.velX = (if (fromLeft) 1f else -1f) * Saucer.SPEED
+        saucer.velX = (if (fromLeft) 1f else -1f) * saucer.speed
         saucer.velY = 0f
         saucer.alive = true
         saucer.shootTimer = 0f
         saucer.sineTimer = 0f
+        saucer.burstCount = 0
+        saucer.burstTimer = 0f
         GameEventBus.emit(GameEvent.SaucerSpawned(saucer.x, saucer.y))
     }
 
     private fun updateSaucers(delta: Float) {
+        // Aim spread narrows as waves progress
+        val baseSpread = when {
+            world.wave >= 7 -> 5f
+            world.wave >= 4 -> 10f
+            else            -> 15f
+        }
+
         for (saucer in world.saucers) {
             if (!saucer.alive) continue
             saucer.sineTimer += delta
@@ -104,15 +122,35 @@ class WaveSystem(private val world: World) {
             saucer.y += saucer.velY * delta
             saucer.velY = sin(saucer.sineTimer * 2.5f) * 60f
 
-            saucer.shootTimer += delta
-            if (saucer.shootTimer >= Saucer.SHOOT_INTERVAL) {
-                saucer.shootTimer = 0f
-                val spread = if (saucer.size == SaucerSize.LARGE) 360f else 15f
-                world.bulletPool.acquireForSaucer(
-                    saucer, world.ship.x, world.ship.y, world.bullets, spread
-                )
-                world.sounds?.playSaucerFire()
+            // Burst fire for DIAMOND: fires 3 rounds 0.12s apart, then waits full cooldown
+            if (saucer.type == SaucerType.DIAMOND && saucer.burstCount > 0) {
+                saucer.burstTimer += delta
+                if (saucer.burstTimer >= 0.12f && saucer.burstCount < 3) {
+                    saucer.burstTimer = 0f
+                    saucer.burstCount++
+                    val spread = if (saucer.size == SaucerSize.LARGE) 360f else baseSpread
+                    world.bulletPool.acquireForSaucer(
+                        saucer, world.ship.x, world.ship.y, world.bullets, spread
+                    )
+                    world.sounds?.playSaucerFire()
+                }
+                if (saucer.burstCount >= 3) saucer.burstCount = 0
+            } else {
+                saucer.shootTimer += delta
+                if (saucer.shootTimer >= saucer.shootInterval) {
+                    saucer.shootTimer = 0f
+                    val spread = if (saucer.size == SaucerSize.LARGE) 360f else baseSpread
+                    world.bulletPool.acquireForSaucer(
+                        saucer, world.ship.x, world.ship.y, world.bullets, spread
+                    )
+                    world.sounds?.playSaucerFire()
+                    if (saucer.type == SaucerType.DIAMOND) {
+                        saucer.burstCount = 1
+                        saucer.burstTimer = 0f
+                    }
+                }
             }
+
             if (saucer.x < -60f || saucer.x > Settings.WORLD_WIDTH + 60f) saucer.alive = false
         }
     }

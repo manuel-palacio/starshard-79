@@ -9,6 +9,7 @@ class Bullet {
     var distanceTravelled = 0f
     var fromPlayer = true
     val radius = 3f
+    var colorR = 1f; var colorG = 1f; var colorB = 1f
 
     companion object {
         const val SPEED        = 650f

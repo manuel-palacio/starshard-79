@@ -95,10 +95,12 @@ class World {
             fireCooldown = FIRE_RATE
         }
         if (input.hyperspace) {
+            val fromX = ship.x; val fromY = ship.y
             ship.x = (Math.random() * Settings.WORLD_WIDTH).toFloat()
             ship.y = (Math.random() * Settings.WORLD_HEIGHT).toFloat()
             ship.invulnerableTimer = 1.5f
             input.hyperspace = false
+            GameEventBus.emit(GameEvent.Hyperspace(fromX, fromY, ship.x, ship.y))
         }
     }
 

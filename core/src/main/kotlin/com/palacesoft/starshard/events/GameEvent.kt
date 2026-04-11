@@ -15,7 +15,8 @@ sealed class GameEvent {
     class PlayerHit(val x: Float, val y: Float) : GameEvent()
     class PlayerRespawned(val x: Float, val y: Float) : GameEvent()
     class SaucerSpawned(val x: Float, val y: Float) : GameEvent()
-    class SaucerDestroyed(val x: Float, val y: Float) : GameEvent()
+    class SaucerDestroyed(val x: Float, val y: Float, val r: Float = 1f, val g: Float = 1f, val b: Float = 1f) : GameEvent()
+    class Hyperspace(val fromX: Float, val fromY: Float, val toX: Float, val toY: Float) : GameEvent()
     class WaveStarted(val wave: Int) : GameEvent()
     class ScoreAwarded(val x: Float, val y: Float, val amount: Int) : GameEvent()
 }

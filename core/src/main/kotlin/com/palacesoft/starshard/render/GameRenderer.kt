@@ -19,6 +19,7 @@ class GameRenderer(
     private val shipRenderer = ShipRenderer()
     private val astRenderer  = AsteroidRenderer()
     private val saucerRend   = SaucerRenderer()
+    private val bulletColor  = com.badlogic.gdx.graphics.Color()
     var hudRenderer: HudRenderer? = null
     var inputHandler: InputHandler? = null
     var vfx: VfxManager? = null
@@ -87,9 +88,9 @@ class GameRenderer(
 
         Gdx.gl.glLineWidth(2f)
         sr.begin(ShapeRenderer.ShapeType.Line)
-        sr.color = com.badlogic.gdx.graphics.Color.WHITE
         for (b in world.bullets) {
             if (!b.alive) continue
+            sr.color = bulletColor.set(b.colorR, b.colorG, b.colorB, 1f)
             val spd = kotlin.math.sqrt(b.velX * b.velX + b.velY * b.velY).takeIf { it > 0f } ?: 1f
             val dx = b.velX / spd * 9f
             val dy = b.velY / spd * 9f

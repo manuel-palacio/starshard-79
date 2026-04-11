@@ -8,7 +8,7 @@ class Ship {
     var velX = 0f
     var velY = 0f
     var rotation = 90f          // degrees; 0=right, 90=up
-    val radius = 12f
+    val radius = 18f
     var alive = true
     var invulnerableTimer = 0f
     var thrusting = false
