@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
 }
 
-val gdxVersion = "1.12.1"
+val gdxVersion = "1.14.0"
 
 dependencies {
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")

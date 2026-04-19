@@ -42,8 +42,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
         world.sounds = sounds
         vfx.subscribeToEvents()
         world.start()
-        @Suppress("DEPRECATION")
-        Gdx.input.isCatchBackKey = true
+        Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true)
     }
 
     override fun render(delta: Float) {
@@ -110,8 +109,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
         renderer.hudRenderer?.resize(width, height)
     }
 
-    @Suppress("DEPRECATION")
-    override fun show()   { Gdx.input.isCatchBackKey = true }
+    override fun show()   { Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true) }
 
     // Fix 1: forward hide() → dispose() so that GameEventBus.clear() and resource
     // disposal always happen on screen transitions, not just on app exit.

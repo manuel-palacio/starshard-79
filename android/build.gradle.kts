@@ -3,7 +3,7 @@ plugins {
     kotlin("android")
 }
 
-val gdxVersion = "1.12.1"
+val gdxVersion = "1.14.0"
 val natives: Configuration by configurations.creating
 
 android {
@@ -13,8 +13,8 @@ android {
         applicationId = "com.palacesoft.starshard"
         minSdk = 24
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.1"
+        versionCode = 17
+        versionName = "1.2"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

@@ -3,7 +3,7 @@ plugins {
     application
 }
 
-val gdxVersion = "1.12.1"
+val gdxVersion = "1.14.0"
 
 dependencies {
     implementation(project(":core"))
