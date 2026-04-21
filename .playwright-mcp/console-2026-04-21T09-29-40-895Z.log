@@ -1,0 +1,4 @@
+[      46ms] TypeError: Cannot read properties of null (reading 'gV')
+    at AZ2 (https://starshard-79.fly.dev/app.js:448:432)
+    at Ws.handleEvent (https://starshard-79.fly.dev/app.js:4:321)
+    at HTMLDocument.fn (https://starshard-79.fly.dev/app.js:215:495)

@@ -21,17 +21,44 @@
                 border: none;
                 image-rendering: auto;
             }
+            #rotate-message {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: #000;
+                color: #5af;
+                font-family: 'Courier New', monospace;
+                font-size: 1.4em;
+                text-align: center;
+                z-index: 9999;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 20px;
+            }
+            #rotate-message .icon {
+                font-size: 3em;
+            }
+            @media (orientation: portrait) and (max-width: 900px) {
+                #rotate-message { display: flex; }
+                #canvas { display: none; }
+            }
         </style>
     </head>
     <body oncontextmenu="return false">
+        <div id="rotate-message">
+            <div class="icon">&#x1F4F1; &#x21BB;</div>
+            <div>Rotate your device to landscape</div>
+        </div>
         <div>
             <canvas id="canvas"></canvas>
         </div>
         <script>
-            // Scale canvas to device pixel ratio for sharp rendering on mobile
-            function setupHiDPI() {
+            function setupCanvas() {
                 var canvas = document.getElementById('canvas');
                 var dpr = window.devicePixelRatio || 1;
+                // Cap DPR at 2 to avoid GPU overload on mobile
+                dpr = Math.min(dpr, 2);
                 var rect = document.body.getBoundingClientRect();
                 var aspect = 16 / 9;
 
@@ -49,8 +76,8 @@
                 canvas.height = Math.floor(h * dpr);
             }
 
-            window.addEventListener('resize', setupHiDPI);
-            setupHiDPI();
+            window.addEventListener('resize', setupCanvas);
+            setupCanvas();
 
             async function start() {
                 main();
