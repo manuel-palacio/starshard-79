@@ -6,3 +6,4 @@ local.properties
 android/libs/
 .DS_Store
 android/release/
+teavm/build/
