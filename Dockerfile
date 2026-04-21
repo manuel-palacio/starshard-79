@@ -5,5 +5,6 @@ RUN ./gradlew :teavm:buildRelease --no-daemon
 
 FROM nginx:alpine
 COPY --from=build /app/teavm/build/dist/webapp/ /usr/share/nginx/html/
+COPY web/index.html /usr/share/nginx/html/index.html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 8080

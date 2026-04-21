@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Starshard 79</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <style>
+            * { margin: 0; padding: 0; }
+            html, body {
+                width: 100%; height: 100%;
+                background: #000;
+                overflow: hidden;
+                touch-action: none;
+            }
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            #canvas {
+                border: none;
+                image-rendering: auto;
+            }
+        </style>
+    </head>
+    <body oncontextmenu="return false">
+        <div>
+            <canvas id="canvas"></canvas>
+        </div>
+        <script>
+            // Scale canvas to device pixel ratio for sharp rendering on mobile
+            function setupHiDPI() {
+                var canvas = document.getElementById('canvas');
+                var dpr = window.devicePixelRatio || 1;
+                var rect = document.body.getBoundingClientRect();
+                var aspect = 16 / 9;
+
+                var w = rect.width;
+                var h = rect.height;
+                if (w / h > aspect) {
+                    w = h * aspect;
+                } else {
+                    h = w / aspect;
+                }
+
+                canvas.style.width = Math.floor(w) + 'px';
+                canvas.style.height = Math.floor(h) + 'px';
+                canvas.width = Math.floor(w * dpr);
+                canvas.height = Math.floor(h * dpr);
+            }
+
+            window.addEventListener('resize', setupHiDPI);
+            setupHiDPI();
+
+            async function start() {
+                main();
+            }
+            window.addEventListener("load", start);
+        </script>
+        <script type="text/javascript" charset="utf-8" src="app.js"></script>
+    </body>
+</html>
