@@ -15,6 +15,7 @@ object Settings {
     val bloomEnabled get() = fxSettings.enableBloom
 
     var sfxEnabled         = true
+    var hapticEnabled      = true
 
     var highScore: Int
         get() = Gdx.app?.getPreferences("asteroids")?.getInteger("highScore", 0) ?: 0
@@ -51,6 +52,7 @@ object Settings {
     fun loadAll() {
         val p = prefs() ?: return
         sfxEnabled = p.getBoolean("sfxEnabled", true)
+        hapticEnabled = p.getBoolean("hapticEnabled", true)
         touchScheme = try {
             TouchScheme.valueOf(p.getString("touchScheme", TouchScheme.GESTURES.name))
         } catch (_: Exception) { TouchScheme.GESTURES }
@@ -63,6 +65,12 @@ object Settings {
     fun saveSfxEnabled() {
         val p = prefs() ?: return
         p.putBoolean("sfxEnabled", sfxEnabled)
+        p.flush()
+    }
+
+    fun saveHapticEnabled() {
+        val p = prefs() ?: return
+        p.putBoolean("hapticEnabled", hapticEnabled)
         p.flush()
     }
 

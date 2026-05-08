@@ -23,7 +23,7 @@ class SettingsScreen(private val game: AsteroidsGame) : Screen {
     private val layout = GlyphLayout()
 
     private var selected = 0
-    private val itemCount = 3  // SFX, Touch Scheme, FX Quality
+    private val itemCount = 4  // SFX, Haptics, Touch Scheme, FX Quality
 
     override fun render(delta: Float) {
         Gdx.gl.glClearColor(0f, 0f, 0.03f, 1f)
@@ -47,14 +47,17 @@ class SettingsScreen(private val game: AsteroidsGame) : Screen {
         // SFX
         drawRow(0, "SOUND", if (Settings.sfxEnabled) "ON" else "OFF", startY)
 
+        // Haptics
+        drawRow(1, "HAPTICS", if (Settings.hapticEnabled) "ON" else "OFF", startY - spacing)
+
         // Touch Scheme
-        drawRow(1, "TOUCH CONTROLS", Settings.touchScheme.name, startY - spacing)
+        drawRow(2, "TOUCH CONTROLS", Settings.touchScheme.name, startY - spacing * 2)
 
         // FX Quality
-        drawRow(2, "FX QUALITY", Settings.fxQuality.name, startY - spacing * 2)
+        drawRow(3, "FX QUALITY", Settings.fxQuality.name, startY - spacing * 3)
 
         drawCentered(hintFont, "UP/DOWN TO SELECT    LEFT/RIGHT TO CHANGE    ESC/BACK TO RETURN",
-                     startY - spacing * 3 - 40f)
+                     startY - spacing * 4 - 40f)
 
         game.batch.end()
     }
@@ -89,11 +92,15 @@ class SettingsScreen(private val game: AsteroidsGame) : Screen {
                     Settings.saveSfxEnabled()
                 }
                 1 -> {
+                    Settings.hapticEnabled = !Settings.hapticEnabled
+                    Settings.saveHapticEnabled()
+                }
+                2 -> {
                     Settings.touchScheme = if (Settings.touchScheme == TouchScheme.BUTTONS)
                         TouchScheme.JOYSTICK else TouchScheme.BUTTONS
                     Settings.saveTouchScheme()
                 }
-                2 -> {
+                3 -> {
                     val qualities = EffectQuality.entries
                     val dir = if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) 1 else -1
                     val idx = (qualities.indexOf(Settings.fxQuality) + dir + qualities.size) % qualities.size

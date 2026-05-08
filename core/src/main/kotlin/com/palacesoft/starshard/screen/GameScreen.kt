@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.palacesoft.starshard.AsteroidsGame
 import com.palacesoft.starshard.game.World
 import com.palacesoft.starshard.util.Settings
+import com.palacesoft.starshard.input.HapticManager
 import com.palacesoft.starshard.input.InputHandler
 import com.palacesoft.starshard.events.GameEventBus
 import com.palacesoft.starshard.render.GameRenderer
@@ -21,6 +22,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     private val world        = World()
     private val inputHandler = InputHandler(world.input)
     private val vfx          = VfxManager(game.sr, game.batch)
+    private val haptics      = HapticManager()
     private val sounds       = game.sounds   // singleton — synthesised once in AsteroidsGame
     private val renderer     = GameRenderer(game.camera, game.batch, game.sr)
     private var pipeline     = PostProcessingPipeline(game.batch)
@@ -42,6 +44,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
         world.vfx   = vfx
         world.sounds = sounds
         vfx.subscribeToEvents()
+        haptics.subscribe()
         world.start()
         Gdx.input.setCatchKey(com.badlogic.gdx.Input.Keys.BACK, true)
     }
