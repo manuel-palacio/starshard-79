@@ -60,12 +60,13 @@ class World {
         bullets.removeAll   { !it.alive }
         streakSystem.update(delta)
         collisionSystem.update()
+        // Latch game-over before any further systems run so they don't tick a final-death frame
+        if (lives <= 0 && !ship.alive) { gameOver = true; return }
         waveSystem.update(delta)
         powerUpSystem.update(delta)
         // Track peak alive count so the heartbeat danger ratio stays valid across splits
         val alive = asteroids.count { it.alive }
         if (alive > waveMaxAsteroids) waveMaxAsteroids = alive
-        if (lives <= 0 && !ship.alive) gameOver = true
     }
 
     private fun updateShip(delta: Float) {
