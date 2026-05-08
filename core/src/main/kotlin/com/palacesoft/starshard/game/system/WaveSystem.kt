@@ -160,6 +160,7 @@ class WaveSystem(private val world: World) {
         if (respawnTimer >= 2f) {
             respawnTimer = 0f
             world.ship.reset()
+            saucerTimer = 0f
             GameEventBus.emit(GameEvent.PlayerRespawned(world.ship.x, world.ship.y))
         }
     }
