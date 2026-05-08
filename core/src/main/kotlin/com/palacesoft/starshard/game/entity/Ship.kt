@@ -15,6 +15,11 @@ class Ship {
     var visible = true
     var flickerAccum = 0f
     var lastBarrel = false  // false=left, true=right — alternates each shot
+    var hyperspaceCooldown = 0f
+
+    companion object {
+        const val HYPERSPACE_COOLDOWN_SECONDS = 8f
+    }
 
     fun reset() {
         x = Settings.WORLD_WIDTH / 2f
@@ -25,5 +30,6 @@ class Ship {
         invulnerableTimer = 3f
         visible = true
         flickerAccum = 0f
+        hyperspaceCooldown = 0f
     }
 }

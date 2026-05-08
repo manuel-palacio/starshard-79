@@ -80,6 +80,7 @@ class GameRenderer(
         sr.projectionMatrix = camera.combined
         hudRenderer?.renderLivesIcons(sr, world.lives)
         hudRenderer?.renderPowerUpBar(sr, world)
+        hudRenderer?.renderHyperspaceCooldown(sr, world)
         inputHandler?.renderTouchOverlay(sr, batch)
     }
 

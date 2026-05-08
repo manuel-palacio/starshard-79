@@ -248,6 +248,27 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
     }
 
     /**
+     * Thin bar that drains as the hyperspace cooldown ticks down. Hidden when ready.
+     */
+    fun renderHyperspaceCooldown(sr: ShapeRenderer, world: World) {
+        val cd = world.ship.hyperspaceCooldown
+        if (cd <= 0f) return
+        val total = com.palacesoft.starshard.game.entity.Ship.HYPERSPACE_COOLDOWN_SECONDS
+        val fraction = (cd / total).coerceIn(0f, 1f)
+        val barWidth = 80f
+        val x = 20f
+        val y = Settings.WORLD_HEIGHT - 80f
+        sr.begin(ShapeRenderer.ShapeType.Filled)
+        sr.color = Color(0.6f, 0.8f, 1f, 0.7f)
+        sr.rect(x, y, barWidth * fraction, 3f)
+        sr.end()
+        sr.begin(ShapeRenderer.ShapeType.Line)
+        sr.color = Color(0.6f, 0.8f, 1f, 0.4f)
+        sr.rect(x, y, barWidth, 3f)
+        sr.end()
+    }
+
+    /**
      * Renders the power-up countdown bar using ShapeRenderer.
      * Call after stage.draw() with HUD camera active.
      */

@@ -85,6 +85,7 @@ class World {
 
     private fun updateShip(delta: Float) {
         if (!ship.alive) { ship.visible = false; return }
+        if (ship.hyperspaceCooldown > 0f) ship.hyperspaceCooldown -= delta
         if (ship.invulnerableTimer > 0f) {
             ship.invulnerableTimer -= delta
             ship.flickerAccum += delta
@@ -124,12 +125,15 @@ class World {
             fireCooldown = activeFireRate
         }
         if (input.hyperspace) {
-            val fromX = ship.x; val fromY = ship.y
-            ship.x = (Math.random() * Settings.WORLD_WIDTH).toFloat()
-            ship.y = (Math.random() * Settings.WORLD_HEIGHT).toFloat()
-            ship.invulnerableTimer = 1.5f
             input.hyperspace = false
-            GameEventBus.emit(GameEvent.Hyperspace(fromX, fromY, ship.x, ship.y))
+            if (ship.hyperspaceCooldown <= 0f) {
+                val fromX = ship.x; val fromY = ship.y
+                ship.x = (Math.random() * Settings.WORLD_WIDTH).toFloat()
+                ship.y = (Math.random() * Settings.WORLD_HEIGHT).toFloat()
+                ship.invulnerableTimer = 1.5f
+                ship.hyperspaceCooldown = Ship.HYPERSPACE_COOLDOWN_SECONDS
+                GameEventBus.emit(GameEvent.Hyperspace(fromX, fromY, ship.x, ship.y))
+            }
         }
     }
 
