@@ -99,6 +99,12 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         }
     }
 
+    private fun streakColorFor(mult: Int): Color = when (mult) {
+        2    -> Color.YELLOW
+        3    -> Color(1f, 0.55f, 0.1f, 1f)  // orange
+        else -> Color(1f, 0.25f, 0.25f, 1f) // red, ×4 and above
+    }
+
     private fun showPowerUpHint() {
         hintLabel.setText("POWER-UPS UNLOCKED")
         hintLabel.clearActions()
@@ -142,11 +148,18 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         }
         val mult = world.streakSystem.multiplier
         if (mult != lastMultiplier) {
+            val increased = mult > lastMultiplier && mult > 1
             lastMultiplier = mult
             multiplierLabel.clearActions()
             if (mult > 1) {
-                multiplierLabel.setText("${mult}×")
+                multiplierLabel.setText("${mult}× STREAK")
+                multiplierLabel.color.set(streakColorFor(mult))
                 multiplierLabel.color.a = 1f
+                if (increased) {
+                    // brief scale pulse on tier-up
+                    multiplierLabel.setScale(1.25f)
+                    multiplierLabel.addAction(Actions.scaleTo(1f, 1f, 0.25f))
+                }
             } else {
                 multiplierLabel.addAction(Actions.fadeOut(0.5f))
             }
