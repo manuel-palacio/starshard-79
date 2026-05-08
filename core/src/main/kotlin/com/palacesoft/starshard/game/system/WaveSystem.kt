@@ -168,7 +168,7 @@ class WaveSystem(private val world: World) {
         world.wave = 1
         spawnWave()
         world.ship.reset()
-        repeat(2) { world.saucers.add(Saucer(SaucerSize.LARGE)) }
+        repeat(4) { world.saucers.add(Saucer(SaucerSize.LARGE)) }
         saucerTimer = 0f
         betweenWaveTimer = 0f
         respawnTimer = 0f
