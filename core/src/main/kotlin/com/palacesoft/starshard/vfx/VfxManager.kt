@@ -85,8 +85,15 @@ class VfxManager(private val sr: ShapeRenderer, private val batch: SpriteBatch) 
                 is GameEvent.PowerUpExpired    -> {}
                 is GameEvent.PowerUpSpawned    -> {}
                 is GameEvent.ShieldBroken      -> onShieldBroken(event)
+                is GameEvent.ExtraLife         -> onExtraLife(event)
             }
         }
+    }
+
+    private fun onExtraLife(e: GameEvent.ExtraLife) {
+        // Brief celebratory ring at ship position
+        emitRing(e.x, e.y, 24, 0f, 1f, 1f, 180f, 0.45f)
+        emitSparks(e.x, e.y, 12, 0.4f, 1f, 1f, 220f, 0.4f)
     }
 
     // ── Event handlers ────────────────────────────────────────────────────────

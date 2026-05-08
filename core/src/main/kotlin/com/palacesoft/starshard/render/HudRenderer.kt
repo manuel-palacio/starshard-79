@@ -10,6 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.FitViewport
+import com.palacesoft.starshard.events.GameEvent
+import com.palacesoft.starshard.events.GameEventBus
 import com.palacesoft.starshard.game.World
 import com.palacesoft.starshard.game.entity.PowerUpType
 import com.palacesoft.starshard.util.Settings
@@ -67,6 +69,15 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
     }
     private var hintShown = false
 
+    private val extraLifeFont = BitmapFont().apply { data.setScale(2f); color = Color.CYAN }
+    private val extraLifeStyle = Label.LabelStyle(extraLifeFont, Color.CYAN)
+    private val extraLifeLabel = Label("", extraLifeStyle).apply {
+        setWidth(Settings.WORLD_WIDTH)
+        setPosition(0f, Settings.WORLD_HEIGHT * 0.62f)
+        setAlignment(Align.center)
+        color.a = 0f
+    }
+
     private var lastScore         = -1
     private var lastWave          = -1
     private var lastHighScore     = -1
@@ -81,6 +92,21 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         stage.addActor(waveCountLabel)
         stage.addActor(multiplierLabel)
         stage.addActor(hintLabel)
+        stage.addActor(extraLifeLabel)
+        GameEventBus.subscribe { event ->
+            if (event is GameEvent.ExtraLife) showExtraLifeBanner()
+        }
+    }
+
+    private fun showExtraLifeBanner() {
+        extraLifeLabel.setText("EXTRA LIFE")
+        extraLifeLabel.clearActions()
+        extraLifeLabel.color.a = 0f
+        extraLifeLabel.addAction(Actions.sequence(
+            Actions.fadeIn(0.25f),
+            Actions.delay(1.4f),
+            Actions.fadeOut(0.5f)
+        ))
     }
 
     fun render(world: World) {
@@ -257,5 +283,6 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         multFont.dispose()
         tutorialHintStyle.font.dispose()
         powerUpFont.dispose()
+        extraLifeFont.dispose()
     }
 }

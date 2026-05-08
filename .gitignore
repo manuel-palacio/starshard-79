@@ -7,3 +7,5 @@ android/libs/
 .DS_Store
 android/release/
 teavm/build/
+.playwright-mcp/
+baseline-*.png

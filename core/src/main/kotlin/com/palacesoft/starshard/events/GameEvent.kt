@@ -24,4 +24,5 @@ sealed class GameEvent {
     class PowerUpCollected(val x: Float, val y: Float, val type: PowerUpType) : GameEvent()
     class PowerUpExpired(val type: PowerUpType) : GameEvent()
     class ShieldBroken(val x: Float, val y: Float) : GameEvent()
+    class ExtraLife(val x: Float, val y: Float) : GameEvent()
 }

@@ -29,6 +29,11 @@ class World {
     var gameOver         = false
     var waveMaxAsteroids = 1   // peak alive count this wave; denominator for danger ratio
     var scoreMultiplier: Int = 1
+    var nextExtraLifeScore = EXTRA_LIFE_THRESHOLD
+    companion object {
+        const val EXTRA_LIFE_THRESHOLD = 10_000
+        const val MAX_LIVES = 5
+    }
     val streakSystem = StreakSystem { mult -> scoreMultiplier = mult }
 
     val input            = GameInput()
@@ -62,11 +67,20 @@ class World {
         collisionSystem.update()
         // Latch game-over before any further systems run so they don't tick a final-death frame
         if (lives <= 0 && !ship.alive) { gameOver = true; return }
+        checkExtraLifeMilestone()
         waveSystem.update(delta)
         powerUpSystem.update(delta)
         // Track peak alive count so the heartbeat danger ratio stays valid across splits
         val alive = asteroids.count { it.alive }
         if (alive > waveMaxAsteroids) waveMaxAsteroids = alive
+    }
+
+    private fun checkExtraLifeMilestone() {
+        while (score >= nextExtraLifeScore) {
+            if (lives < MAX_LIVES) lives++
+            nextExtraLifeScore += EXTRA_LIFE_THRESHOLD
+            GameEventBus.emit(GameEvent.ExtraLife(ship.x, ship.y))
+        }
     }
 
     private fun updateShip(delta: Float) {
