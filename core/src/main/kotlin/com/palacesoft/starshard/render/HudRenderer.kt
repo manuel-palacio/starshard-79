@@ -44,6 +44,14 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         setAlignment(Align.center)
         color.a = 0f
     }
+    private val waveSubFont   = BitmapFont().apply { data.setScale(1.3f); color = Color(0.7f, 0.85f, 1f, 1f) }
+    private val waveSubStyle  = Label.LabelStyle(waveSubFont, Color(0.7f, 0.85f, 1f, 1f))
+    private val waveSubLabel  = Label("", waveSubStyle).apply {
+        setWidth(Settings.WORLD_WIDTH)
+        setPosition(0f, Settings.WORLD_HEIGHT / 2f + 20f)
+        setAlignment(Align.center)
+        color.a = 0f
+    }
     private val bestLabel = Label("", bestHudStyle).apply {
         setWidth(Settings.WORLD_WIDTH)
         setPosition(0f, Settings.WORLD_HEIGHT - 40f)
@@ -89,6 +97,7 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
     init {
         stage.addActor(scoreLabel)
         stage.addActor(waveLabel)
+        stage.addActor(waveSubLabel)
         stage.addActor(bestLabel)
         stage.addActor(waveCountLabel)
         stage.addActor(multiplierLabel)
@@ -170,6 +179,17 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
             waveLabel.clearActions()
             waveLabel.color.a = 0f
             waveLabel.addAction(Actions.sequence(
+                Actions.fadeIn(0.4f),
+                Actions.delay(2f),
+                Actions.fadeOut(0.6f)
+            ))
+            val sub = if (world.wave == 1 && !Settings.tutorialCompleted) "TUTORIAL"
+                      else "${world.wave * 2 + 2} ASTEROIDS"
+            waveSubLabel.setText(sub)
+            waveSubLabel.clearActions()
+            waveSubLabel.color.a = 0f
+            waveSubLabel.addAction(Actions.sequence(
+                Actions.delay(0.15f),
                 Actions.fadeIn(0.4f),
                 Actions.delay(2f),
                 Actions.fadeOut(0.6f)
@@ -335,5 +355,6 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         tutorialHintStyle.font.dispose()
         powerUpFont.dispose()
         extraLifeFont.dispose()
+        waveSubFont.dispose()
     }
 }
