@@ -28,6 +28,7 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
     private var disposed = false
     private var gameOverHandled = false
     private var paused = false
+    private var confirmQuit = false
 
     private val pauseFont = BitmapFont().apply { data.setScale(3f); color = Color.WHITE }
     private val pauseSubFont = BitmapFont().apply { data.setScale(1.5f); color = Color.GRAY }
@@ -47,8 +48,13 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
 
     override fun render(delta: Float) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
-            paused = !paused
-            if (paused) sounds.pauseLoops()
+            if (paused && confirmQuit) {
+                confirmQuit = false
+            } else {
+                paused = !paused
+                if (paused) sounds.pauseLoops()
+                if (!paused) confirmQuit = false
+            }
         }
 
         if (paused) {
@@ -90,13 +96,22 @@ class GameScreen(private val game: AsteroidsGame) : Screen {
 
         game.batch.projectionMatrix = game.camera.combined
         game.batch.begin()
-        drawPauseCentered(pauseFont, "PAUSED", Settings.WORLD_HEIGHT / 2f + 40f)
-        drawPauseCentered(pauseSubFont, "PRESS ESC OR BACK TO RESUME", Settings.WORLD_HEIGHT / 2f - 30f)
-        drawPauseCentered(pauseSubFont, "PRESS Q TO QUIT", Settings.WORLD_HEIGHT / 2f - 70f)
+        if (confirmQuit) {
+            drawPauseCentered(pauseFont, "QUIT TO MENU?", Settings.WORLD_HEIGHT / 2f + 40f)
+            drawPauseCentered(pauseSubFont, "ENTER = YES     ESC = NO", Settings.WORLD_HEIGHT / 2f - 30f)
+        } else {
+            drawPauseCentered(pauseFont, "PAUSED", Settings.WORLD_HEIGHT / 2f + 40f)
+            drawPauseCentered(pauseSubFont, "PRESS ESC OR BACK TO RESUME", Settings.WORLD_HEIGHT / 2f - 30f)
+            drawPauseCentered(pauseSubFont, "PRESS Q TO QUIT", Settings.WORLD_HEIGHT / 2f - 70f)
+        }
         game.batch.end()
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-            game.setScreen(MenuScreen(game))
+        if (confirmQuit) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+                game.setScreen(MenuScreen(game))
+            }
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            confirmQuit = true
         }
     }
 
