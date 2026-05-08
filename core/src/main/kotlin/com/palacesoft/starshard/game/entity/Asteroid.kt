@@ -57,8 +57,18 @@ object AsteroidFactory {
     }
 
     fun split(asteroid: Asteroid, rng: Random = Random): List<Asteroid> = when (asteroid.size) {
-        AsteroidSize.LARGE  -> List(2) { createRandom(asteroid.x, asteroid.y, AsteroidSize.MEDIUM, rng) }
-        AsteroidSize.MEDIUM -> List(2) { createRandom(asteroid.x, asteroid.y, AsteroidSize.SMALL, rng) }
+        AsteroidSize.LARGE  -> splitInto(asteroid, AsteroidSize.MEDIUM, rng)
+        AsteroidSize.MEDIUM -> splitInto(asteroid, AsteroidSize.SMALL, rng)
         AsteroidSize.SMALL  -> emptyList()
+    }
+
+    private fun splitInto(parent: Asteroid, childSize: AsteroidSize, rng: Random): List<Asteroid> {
+        val angle = rng.nextFloat() * 2f * PI.toFloat()
+        val ox = cos(angle) * childSize.radius
+        val oy = sin(angle) * childSize.radius
+        return listOf(
+            createRandom(parent.x + ox, parent.y + oy, childSize, rng),
+            createRandom(parent.x - ox, parent.y - oy, childSize, rng)
+        )
     }
 }
