@@ -68,6 +68,7 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         color.a = 0f
     }
     private var hintShown = false
+    private var powerUpHintShown = false
 
     private val extraLifeFont = BitmapFont().apply { data.setScale(2f); color = Color.CYAN }
     private val extraLifeStyle = Label.LabelStyle(extraLifeFont, Color.CYAN)
@@ -96,6 +97,18 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
         GameEventBus.subscribe { event ->
             if (event is GameEvent.ExtraLife) showExtraLifeBanner()
         }
+    }
+
+    private fun showPowerUpHint() {
+        hintLabel.setText("POWER-UPS UNLOCKED")
+        hintLabel.clearActions()
+        hintLabel.color.a = 0f
+        hintLabel.addAction(Actions.sequence(
+            Actions.delay(1.0f),
+            Actions.fadeIn(0.4f),
+            Actions.delay(2.5f),
+            Actions.fadeOut(0.6f)
+        ))
     }
 
     private fun showExtraLifeBanner() {
@@ -148,6 +161,10 @@ class HudRenderer(batch: SpriteBatch, camera: OrthographicCamera) {
                 Actions.delay(2f),
                 Actions.fadeOut(0.6f)
             ))
+            if (world.wave == 3 && !powerUpHintShown) {
+                powerUpHintShown = true
+                showPowerUpHint()
+            }
         }
         if (!Settings.tutorialCompleted && world.wave == 1 && !hintShown) {
             hintShown = true
