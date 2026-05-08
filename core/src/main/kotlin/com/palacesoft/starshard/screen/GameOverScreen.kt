@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Rectangle
+import com.badlogic.gdx.math.Vector3
 import com.palacesoft.starshard.AsteroidsGame
 import com.palacesoft.starshard.render.Starfield
 import com.palacesoft.starshard.util.Settings
@@ -29,8 +32,8 @@ class GameOverScreen(
         color = if (isNewBest) Color.GOLD else Color.LIGHT_GRAY
     }
     private val layout = GlyphLayout()
-
-    private val LB_ZONE_THRESHOLD = 0.33f
+    private val lbRect = Rectangle()
+    private val touchVec = Vector3()
 
     private fun drawCentered(f: BitmapFont, text: String, y: Float) {
         layout.setText(f, text)
@@ -54,17 +57,33 @@ class GameOverScreen(
 
         drawCentered(subFont, "PRESS SPACE OR TAP TO RETRY", Settings.WORLD_HEIGHT / 2f - 120f)
         if (game.gameServices != null) {
-            drawCentered(lbFont, "LEADERBOARD", Settings.WORLD_HEIGHT / 2f - 180f)
+            val lbText = "LEADERBOARD"
+            val lbY = Settings.WORLD_HEIGHT / 2f - 180f
+            layout.setText(lbFont, lbText)
+            val lbX = (Settings.WORLD_WIDTH - layout.width) / 2f
+            val padX = 24f
+            val padY = 16f
+            lbRect.set(lbX - padX, lbY - layout.height - padY, layout.width + 2 * padX, layout.height + 2 * padY)
+            lbFont.draw(game.batch, lbText, lbX, lbY)
         }
         game.batch.end()
+
+        if (game.gameServices != null) {
+            game.sr.projectionMatrix = game.camera.combined
+            game.sr.begin(ShapeRenderer.ShapeType.Line)
+            game.sr.color = Color(0.4f, 0.85f, 1f, 0.8f)
+            game.sr.rect(lbRect.x, lbRect.y, lbRect.width, lbRect.height)
+            game.sr.end()
+        }
 
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)) {
             game.setScreen(GameScreen(game))
             return
         }
         if (Gdx.input.justTouched()) {
-            val normY = Gdx.input.y.toFloat() / Gdx.graphics.height.toFloat()
-            if (game.gameServices != null && normY > (1f - LB_ZONE_THRESHOLD)) {
+            touchVec.set(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)
+            game.camera.unproject(touchVec)
+            if (game.gameServices != null && lbRect.contains(touchVec.x, touchVec.y)) {
                 game.gameServices?.showLeaderboard()
             } else {
                 game.setScreen(GameScreen(game))
