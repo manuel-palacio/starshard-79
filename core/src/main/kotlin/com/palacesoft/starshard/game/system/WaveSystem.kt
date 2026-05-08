@@ -48,6 +48,9 @@ class WaveSystem(private val world: World) {
     }
 
     fun spawnWave() {
+        // Reset the peak tracker before the wave-specific spawner overwrites it,
+        // so a stale inflated value from the previous wave's splits doesn't leak in.
+        world.waveMaxAsteroids = 1
         if (world.wave == 1 && !Settings.tutorialCompleted) {
             spawnTutorialWave()
         } else {
